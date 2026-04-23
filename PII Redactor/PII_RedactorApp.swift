@@ -1,21 +1,27 @@
-//
-//  PII_RedactorApp.swift
-//  PII Redactor
-//
-//  Created by Selvam S on 23/04/26.
-//
-
 import SwiftUI
-import CoreData
 
 @main
 struct PII_RedactorApp: App {
-    let persistenceController = PersistenceController.shared
+    @StateObject private var controller = DocumentController()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            RootView()
+                .environmentObject(controller)
+                .frame(minWidth: 980, minHeight: 640)
+        }
+        .windowToolbarStyle(.unified(showsTitle: false))
+        .commands {
+            CommandGroup(replacing: .newItem) {
+                Button("Open PDF…") { controller.presentOpenPanel() }
+                    .keyboardShortcut("o", modifiers: [.command])
+            }
+            CommandGroup(after: .newItem) {
+                Divider()
+                Button("Export Redacted PDF…") { controller.requestExport() }
+                    .keyboardShortcut("e", modifiers: [.command, .shift])
+                    .disabled(!controller.canExport)
+            }
         }
     }
 }

@@ -79,6 +79,11 @@ actor PrivacyFilter {
         case q4 = "model_q4.onnx"              // ~920 MB int4
 
         var downloadGlob: String { "onnx/\(rawValue)*" }
+        /// Filename (not path) of the self-contained model we emit after
+        /// inlining external weights. Written into the same `onnx/` directory.
+        var mergedFilename: String {
+            (rawValue as NSString).deletingPathExtension + ".merged.onnx"
+        }
     }
 
     private let repoID: String
@@ -97,7 +102,9 @@ actor PrivacyFilter {
 
     var isLoaded: Bool { session != nil && tokenizer != nil }
 
-    /// Downloads the model + tokenizer (cached across runs) and prepares an ORT session.
+    /// Downloads the model + tokenizer (cached across runs), pre-inlines the
+    /// ONNX external weights (required to unblock CoreML EP — see ModelMerger),
+    /// and prepares an ORT session with CoreML/ANE acceleration enabled.
     func load(progress: @Sendable @escaping (Double) -> Void) async throws {
         let hub = HubApi.shared
         let repo = Hub.Repo(id: repoID)
@@ -108,8 +115,9 @@ actor PrivacyFilter {
             "viterbi_calibration.json",
             variant.downloadGlob,
         ]
+        // Phase A: download weights (~810 MB–1.6 GB, cached). Map 0...0.85.
         let modelDir = try await hub.snapshot(from: repo, matching: globs) { p in
-            progress(p.fractionCompleted)
+            progress(min(0.85, p.fractionCompleted * 0.85))
         }
 
         let tokenizer = try await AutoTokenizer.from(modelFolder: modelDir)
@@ -118,40 +126,40 @@ actor PrivacyFilter {
         let configData = try Data(contentsOf: configURL)
         let labels = try Self.parseLabels(from: configData)
 
-        let env = try ORTEnv(loggingLevel: .info)
+        // Phase B: merge external data if we haven't already. Map 0.85...0.98.
+        let onnxDir = modelDir.appendingPathComponent("onnx")
+        let originalURL = onnxDir.appendingPathComponent(variant.rawValue)
+        let mergedURL = onnxDir.appendingPathComponent(variant.mergedFilename)
+        let fm = FileManager.default
+        if !fm.fileExists(atPath: mergedURL.path) {
+            try ModelMerger.mergeExternalData(modelURL: originalURL, outputURL: mergedURL) { f in
+                progress(0.85 + f * 0.13)
+            }
+        }
+
+        // Phase C: build the session with CoreML EP. Map 0.98...1.0.
+        progress(0.98)
+
+        let env = try ORTEnv(loggingLevel: .warning)
         let options = try ORTSessionOptions()
         try options.setGraphOptimizationLevel(.all)
         try options.setIntraOpNumThreads(0)
 
-        // NOTE: CoreML EP temporarily disabled — it appears to confuse ORT's
-        // external-data path resolution for this model (opens
-        // "<modelFile>/<externalDataFile>" instead of the sibling file). CPU
-        // path works fine. Re-enable once we isolate which CoreML EP option
-        // causes the wrong dirname() behavior.
-        // if ORTIsCoreMLExecutionProviderAvailable() {
-        //     let cml = ORTCoreMLExecutionProviderOptions()
-        //     cml.createMLProgram = true
-        //     try? options.appendCoreMLExecutionProvider(with: cml)
-        // }
-
-        let modelURL = modelDir
-            .appendingPathComponent("onnx")
-            .appendingPathComponent(variant.rawValue)
-        let modelPath = modelURL.path
-        let dataPath = modelURL.deletingLastPathComponent()
-            .appendingPathComponent("\(variant.rawValue)_data").path
-        let fm = FileManager.default
-        print("[PrivacyFilter] modelDir = \(modelDir.path)")
-        print("[PrivacyFilter] .onnx exists=\(fm.fileExists(atPath: modelPath)) path=\(modelPath)")
-        print("[PrivacyFilter] .onnx_data exists=\(fm.fileExists(atPath: dataPath)) path=\(dataPath)")
-
-        let session: ORTSession
-        do {
-            session = try ORTSession(env: env, modelPath: modelPath, sessionOptions: options)
-        } catch {
-            print("[PrivacyFilter] ORTSession init failed: \(error)")
-            throw error
+        // Re-enabled now that external data is inlined. MLProgram + All compute
+        // units lets CoreML pick across ANE/GPU/CPU on Apple Silicon; on Intel
+        // Macs (no ANE) it falls back to CPU+GPU automatically.
+        if ORTIsCoreMLExecutionProviderAvailable() {
+            try? options.appendCoreMLExecutionProvider(withOptionsV2: [
+                "MLComputeUnits": "All",
+                "ModelFormat": "MLProgram",
+            ])
         }
+
+        let session = try ORTSession(
+            env: env,
+            modelPath: mergedURL.path,
+            sessionOptions: options
+        )
         let names = (try? session.inputNames()) ?? ["input_ids", "attention_mask"]
 
         self.env = env
@@ -159,6 +167,7 @@ actor PrivacyFilter {
         self.tokenizer = tokenizer
         self.labels = labels
         self.inputNames = Set(names)
+        progress(1.0)
     }
 
     /// Runs inference and returns detected PII spans.
@@ -244,7 +253,7 @@ actor PrivacyFilter {
     private static func makeInt64Tensor(_ values: [Int64], shape: [NSNumber]) throws -> ORTValue {
         let byteCount = values.count * MemoryLayout<Int64>.stride
         let data = NSMutableData(length: byteCount)!
-        values.withUnsafeBufferPointer { buf in
+        _ = values.withUnsafeBufferPointer { buf in
             memcpy(data.mutableBytes, buf.baseAddress, byteCount)
         }
         return try ORTValue(tensorData: data, elementType: .int64, shape: shape)
