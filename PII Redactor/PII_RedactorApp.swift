@@ -1,5 +1,8 @@
 import SwiftUI
 
+/// Retains the `PII_RedactorApp` type name to avoid a full Xcode-target
+/// rename; the user-facing product is "SafePaste" (see
+/// INFOPLIST_KEY_CFBundleDisplayName in the build settings).
 @main
 struct PII_RedactorApp: App {
     @StateObject private var controller = DocumentController()

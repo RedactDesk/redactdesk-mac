@@ -102,8 +102,8 @@ actor PrivacyFilter {
 
     var isLoaded: Bool { session != nil && tokenizer != nil }
 
-    /// Downloads the model + tokenizer (cached across runs), pre-inlines the
-    /// ONNX external weights (required to unblock CoreML EP — see ModelMerger),
+    /// Downloads the model + tokenizer from HuggingFace Hub on first launch
+    /// (cached across runs), inlines ONNX external weights via ModelMerger,
     /// and prepares an ORT session with CoreML/ANE acceleration enabled.
     func load(progress: @Sendable @escaping (Double) -> Void) async throws {
         let hub = HubApi.shared
@@ -115,7 +115,7 @@ actor PrivacyFilter {
             "viterbi_calibration.json",
             variant.downloadGlob,
         ]
-        // Phase A: download weights (~810 MB–1.6 GB, cached). Map 0...0.85.
+        // Phase A: download weights (~917 MB, cached). Map 0…0.85.
         let modelDir = try await hub.snapshot(from: repo, matching: globs) { p in
             progress(min(0.85, p.fractionCompleted * 0.85))
         }
@@ -126,7 +126,7 @@ actor PrivacyFilter {
         let configData = try Data(contentsOf: configURL)
         let labels = try Self.parseLabels(from: configData)
 
-        // Phase B: merge external data if we haven't already. Map 0.85...0.98.
+        // Phase B: merge external data if we haven't already. Map 0.85…0.98.
         let onnxDir = modelDir.appendingPathComponent("onnx")
         let originalURL = onnxDir.appendingPathComponent(variant.rawValue)
         let mergedURL = onnxDir.appendingPathComponent(variant.mergedFilename)

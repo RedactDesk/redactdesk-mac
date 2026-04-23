@@ -45,7 +45,7 @@ struct RootView: View {
             Image(systemName: "shield.lefthalf.filled")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
-            Text("PII Redactor")
+            Text("SafePaste")
                 .font(Design.Font.headline)
         }
 
@@ -131,7 +131,7 @@ private struct ModelPreparingOverlay: View {
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
             VStack(spacing: 4) {
-                Text("Preparing your privacy model")
+                Text("Setting up SafePaste")
                     .font(Design.Font.title)
                 Text(phase)
                     .font(Design.Font.callout)
@@ -144,7 +144,7 @@ private struct ModelPreparingOverlay: View {
             Text("\(Int(fraction * 100))%")
                 .font(Design.Font.monoSmall)
                 .foregroundStyle(.secondary)
-            Text("Runs 100% on your Mac — nothing leaves this device.")
+            Text("SafePaste runs 100% on your Mac — nothing leaves this device.")
                 .font(Design.Font.caption)
                 .foregroundStyle(.secondary.opacity(0.8))
                 .padding(.top, Design.Space.xs)
@@ -174,7 +174,7 @@ private struct ModelFailureOverlay: View {
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(Color.red)
             VStack(spacing: 4) {
-                Text("Could not prepare the privacy model")
+                Text("Could not set up SafePaste")
                     .font(Design.Font.title)
                 Text(message)
                     .font(Design.Font.callout)
