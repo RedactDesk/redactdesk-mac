@@ -1,5 +1,6 @@
 import Foundation
 import CoreGraphics
+import PDFKit
 
 /// A single detected PII span mapped onto a PDF page, ready for redaction.
 struct PageSpan: Identifiable, Sendable, Hashable {
@@ -23,29 +24,66 @@ struct PageSpan: Identifiable, Sendable, Hashable {
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
 
-/// Merges per-scalar rects from `PDFExtractor` into line-level redaction rects
-/// for each span returned by `PrivacyFilter`.
+/// Resolves `RedactionSpan`s (model offsets in decoded-text space) into
+/// pixel-accurate rectangles on the PDF page.
+///
+/// Why text search, not token-decoded offsets: `PrivacyFilter` reports offsets
+/// in `tokenizer.decode(all tokens)`, which is *almost* identical to the input
+/// text but drifts by a handful of characters on leading whitespace, fused
+/// punctuation, soft hyphens, etc. Indexing `PDFPage.characterBounds(at:)`
+/// with those offsets causes visible drift in the redaction boxes — leaves
+/// the first few characters of the PII exposed. We skip that class of bugs
+/// entirely by searching for the literal PII text inside `page.text`, then
+/// letting PDFKit compute the rects from an NSRange via its native selection
+/// machinery (`PDFPage.selection(for:)` + `PDFSelection.selectionsByLine()`).
 enum SpanMapper {
-    /// Turns `RedactionSpan`s scoped to a page's decoded text into `PageSpan`s
-    /// carrying one rect per text line the span occupies.
     static func mapSpans(
         _ spans: [RedactionSpan],
         onto page: ExtractedPage
     ) -> [PageSpan] {
         var result: [PageSpan] = []
         result.reserveCapacity(spans.count)
+
+        let nsText = page.text as NSString
+        // Walk a cursor forward so repeated strings (e.g. the name appearing
+        // three times on a page) resolve to the right occurrence in order.
+        var searchStart = 0
+
         for span in spans {
-            let rects = lineRects(
-                startScalar: span.start,
-                endScalar: span.end,
-                in: page
+            guard !span.text.isEmpty else { continue }
+
+            let remaining = NSRange(
+                location: searchStart,
+                length: max(0, nsText.length - searchStart)
             )
+            var resolved = nsText.range(of: span.text, options: [.literal], range: remaining)
+
+            // Fallback: if the model's decoded span text has a trailing trim
+            // difference (e.g. dropped a soft hyphen), try without the last
+            // character. This rescues most of the ~1% of spans where literal
+            // match misses.
+            if resolved.location == NSNotFound, span.text.count > 2 {
+                let trimmed = String(span.text.dropLast())
+                resolved = nsText.range(of: trimmed, options: [.literal], range: remaining)
+            }
+            // Last-ditch fallback: use the raw decoded-space offsets as a
+            // best-effort so the span is at least *somewhere* in the PDF.
+            if resolved.location == NSNotFound {
+                let hintedStart = max(0, min(span.start, nsText.length))
+                let hintedEnd = max(hintedStart, min(span.end, nsText.length))
+                resolved = NSRange(location: hintedStart, length: hintedEnd - hintedStart)
+            }
+
+            searchStart = resolved.location + resolved.length
+
+            let rects = pageRects(for: resolved, on: page.pdfPage)
             guard !rects.isEmpty else { continue }
+
             result.append(
                 PageSpan(
                     pageIndex: page.pageIndex,
-                    start: span.start,
-                    end: span.end,
+                    start: resolved.location,
+                    end: resolved.location + resolved.length,
                     label: span.label,
                     text: span.text,
                     rects: rects
@@ -55,41 +93,21 @@ enum SpanMapper {
         return result
     }
 
-    /// Collects per-scalar rects within [start, end) and fuses adjacent rects
-    /// that are vertically aligned into one line rectangle.
-    private static func lineRects(
-        startScalar: Int,
-        endScalar: Int,
-        in page: ExtractedPage
-    ) -> [CGRect] {
-        let lo = max(0, min(startScalar, page.bounds.count))
-        let hi = max(lo, min(endScalar, page.bounds.count))
-        guard lo < hi else { return [] }
-
-        var lines: [CGRect] = []
-        var current: CGRect?
-
-        for i in lo..<hi {
-            let r = page.bounds[i]
-            // PDFKit returns CGRect.zero for characters without glyph geometry
-            // (newlines, soft hyphens, control codes). Skip them.
-            if r.isEmpty || r.width == 0 || r.height == 0 { continue }
-            if var c = current {
-                // Same line: roughly same y and overlapping height.
-                let verticalOverlap = min(c.maxY, r.maxY) - max(c.minY, r.minY)
-                if verticalOverlap >= min(c.height, r.height) * 0.5 {
-                    c = c.union(r)
-                    current = c
-                    continue
-                }
-                lines.append(c)
-                current = r
-            } else {
-                current = r
-            }
+    /// Ask PDFKit for selection rects covering the given NSRange. If the range
+    /// spans multiple visual lines, `selectionsByLine()` returns one selection
+    /// per line, each with a single bounding rect — exactly what we want for
+    /// drawing black boxes that don't cross whitespace between lines.
+    private static func pageRects(for range: NSRange, on page: PDFPage) -> [CGRect] {
+        guard range.length > 0, let selection = page.selection(for: range) else { return [] }
+        let lineSelections = selection.selectionsByLine()
+        guard !lineSelections.isEmpty else {
+            let r = selection.bounds(for: page)
+            return r.isEmpty ? [] : [r]
         }
-        if let c = current { lines.append(c) }
-        return lines
+        return lineSelections.compactMap { line -> CGRect? in
+            let r = line.bounds(for: page)
+            return r.isEmpty ? nil : r
+        }
     }
 }
 

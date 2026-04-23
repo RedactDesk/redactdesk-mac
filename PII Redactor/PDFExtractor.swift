@@ -1,15 +1,16 @@
 import Foundation
 import PDFKit
 
-/// A page's text plus per-character bounding boxes in page coordinates.
+/// A page's text plus a reference to its PDFPage for native selection rects.
 struct ExtractedPage {
     let pageIndex: Int
-    /// Visible text concatenation for this page, in document order.
+    /// Visible text concatenation for this page, in document order. Sourced
+    /// from `PDFPage.string`.
     let text: String
-    /// `bounds[i]` is the rect for scalar `i` in `text`. Always same length as
-    /// `text.unicodeScalars.count`. Rects are in PDF user-space for the page.
-    let bounds: [CGRect]
-    /// Native page size in points — handy for rendering.
+    /// The PDFPage is retained so we can ask PDFKit to produce pixel-accurate
+    /// selection rectangles via `PDFPage.selection(for: NSRange)`.
+    let pdfPage: PDFPage
+    /// Native page size in points.
     let pageRect: CGRect
 }
 
@@ -41,28 +42,11 @@ enum PDFExtractor {
         pages.reserveCapacity(count)
         for i in 0..<count {
             guard let page = doc.page(at: i) else { continue }
-            let text = page.string ?? ""
-            let scalarCount = text.unicodeScalars.count
-            var bounds: [CGRect] = []
-            bounds.reserveCapacity(scalarCount)
-
-            // `characterBounds(at:)` is indexed by UTF-16 code unit, not scalar.
-            // Step through scalars and map each to its first UTF-16 offset.
-            let utf16 = text.utf16
-            var utf16Index = utf16.startIndex
-            for scalar in text.unicodeScalars {
-                let offset = utf16.distance(from: utf16.startIndex, to: utf16Index)
-                let rect = page.characterBounds(at: offset)
-                bounds.append(rect)
-                // advance utf16Index by the scalar's UTF-16 length
-                utf16Index = utf16.index(utf16Index, offsetBy: scalar.utf16.count)
-            }
-
             pages.append(
                 ExtractedPage(
                     pageIndex: i,
-                    text: text,
-                    bounds: bounds,
+                    text: page.string ?? "",
+                    pdfPage: page,
                     pageRect: page.bounds(for: .mediaBox)
                 )
             )
