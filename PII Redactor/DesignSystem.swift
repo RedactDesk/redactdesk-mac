@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Shared visual tokens for the redactor UI. Every screen and control should
-/// read from here -the accent palette drives category colors, span highlights,
+/// read from here - the accent palette drives category colors, span highlights,
 /// and paywall gradients later.
 enum Design {
     // MARK: - Spacing (8pt grid)
@@ -31,7 +31,7 @@ enum Design {
     //
     // The marketing design pairs Inter (sans) with Poly (serif) for display
     // headings. On macOS we use the system sans + the system serif (New York)
-    // via `design: .serif` -keeps the app font-free and renders in the same
+    // via `design: .serif` - keeps the app font-free and renders in the same
     // editorial register as Poly without bundling webfonts.
 
     enum Font {
@@ -44,7 +44,7 @@ enum Design {
         static let captionStrong = SwiftUI.Font.system(size: 11, weight: .medium, design: .default)
         static let monoSmall = SwiftUI.Font.system(size: 11, weight: .regular, design: .monospaced)
 
-        /// Editorial serif headline -used on the welcome sheet and post-export
+        /// Editorial serif headline - used on the welcome sheet and post-export
         /// attribution card to match the Poly usage on elephas.app.
         static let serifDisplay = SwiftUI.Font.system(size: 28, weight: .semibold, design: .serif)
         static let serifTitle = SwiftUI.Font.system(size: 22, weight: .semibold, design: .serif)
@@ -239,7 +239,7 @@ extension Color {
 
 // MARK: - Pill button style
 
-/// Primary indigo pill CTA -matches the elephas.app `.btn-brand` style.
+/// Primary indigo pill CTA - matches the elephas.app `.btn-brand` style.
 struct BrandPillButtonStyle: ButtonStyle {
     enum Size { case regular, large }
     var size: Size = .regular
@@ -265,7 +265,7 @@ struct BrandPillButtonStyle: ButtonStyle {
     }
 }
 
-/// Secondary outlined pill -used as "Keep using SafePaste" / "Not now".
+/// Secondary outlined pill - used as "Keep using SafePaste" / "Not now".
 struct GhostPillButtonStyle: ButtonStyle {
     enum Size { case regular, large }
     var size: Size = .regular

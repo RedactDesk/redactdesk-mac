@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Persistent footer strip shown at the bottom of the main window. Mirrors
 /// the mock: "SafePaste · by the Elephas team · v1.0" on the left, "View
-/// source" on the right. Tiny, muted, always-present -falls under the
+/// source" on the right. Tiny, muted, always-present - falls under the
 /// "Attribution" layer in the intensity gradient (background, always on).
 struct AttributionFooter: View {
     private var versionString: String {

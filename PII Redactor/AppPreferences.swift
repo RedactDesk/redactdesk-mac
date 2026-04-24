@@ -39,7 +39,7 @@ final class AppPreferences: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        // Watermark defaults to ON -opt-out, not opt-in, so early users see
+        // Watermark defaults to ON - opt-out, not opt-in, so early users see
         // the attribution until they actively disable it.
         if defaults.object(forKey: Key.watermarkEnabled) == nil {
             defaults.set(true, forKey: Key.watermarkEnabled)
@@ -66,7 +66,7 @@ final class AppPreferences: ObservableObject {
     }
 
     /// Called once per successful export. Drives the milestone prompts
-    /// planned for v1.1 -the counter is safe to increment now so that
+    /// planned for v1.1 - the counter is safe to increment now so that
     /// milestone UI can drop in without a data migration.
     func incrementRedactionCount(by amount: Int = 1) {
         guard amount > 0 else { return }

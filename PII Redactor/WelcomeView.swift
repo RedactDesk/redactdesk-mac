@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Two-pane first-run onboarding. Shown once per install version via
-/// `AppPreferences.needsOnboarding`. Dismissible at any time -the welcome
+/// `AppPreferences.needsOnboarding`. Dismissible at any time - the welcome
 /// is polite, not blocking, so a user can always skip straight into the app.
 ///
 /// Layout mirrors the milestone modals in the design: centred card, indigo
@@ -51,7 +51,7 @@ struct WelcomeView: View {
                 .foregroundStyle(Design.Palette.fg)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("SafePaste finds sensitive information in PDFs -names, emails, phone numbers, addresses, account numbers -and removes it cleanly, so you can share the redacted copy with any AI or any person without worry.")
+            Text("SafePaste finds sensitive information in PDFs (names, emails, phone numbers, addresses, account numbers) and removes it cleanly, so you can share the redacted copy with any AI or any person without worry.")
                 .font(Design.Font.body)
                 .foregroundStyle(Design.Palette.fgMuted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -62,7 +62,23 @@ struct WelcomeView: View {
                 FeatureChip(label: "Irreversible redaction")
             }
             .padding(.top, Design.Space.xs)
+
+            poweredByLine
+                .padding(.top, Design.Space.xxs)
         }
+    }
+
+    /// Small trust caption under the feature chips. Cites the open-source
+    /// model SafePaste uses, with a tap-to-open link to OpenAI's launch post.
+    /// Rendered via SwiftUI markdown so the link is keyboard-accessible and
+    /// respects the accent tint without us hand-rolling an NSAttributedString.
+    private var poweredByLine: some View {
+        let markdown: LocalizedStringKey = "Powered by OpenAI's open-source [privacy-filter](https://openai.com/index/introducing-openai-privacy-filter/) model, running on your Mac."
+        return Text(markdown)
+            .font(Design.Font.caption)
+            .foregroundStyle(Design.Palette.fgSubtle)
+            .tint(Design.Brand.primary)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     private var pane2: some View {

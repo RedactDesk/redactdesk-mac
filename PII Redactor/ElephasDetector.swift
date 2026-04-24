@@ -8,7 +8,7 @@ import Foundation
 /// in Elephas's `AppDelegate`.
 enum ElephasDetector {
     /// `true` if any of the Elephas bundle variants (direct / MAS / Setapp)
-    /// are installed. Computed on each call -cheap enough for a post-export
+    /// are installed. Computed on each call - cheap enough for a post-export
     /// UI that renders once per export.
     static var isInstalled: Bool { installedBundleURL != nil }
 

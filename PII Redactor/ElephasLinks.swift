@@ -30,7 +30,7 @@ enum ElephasLinks {
     // MARK: - URL scheme
 
     /// Registered by Elephas in its Info.plist. SafePaste v1.0 does not
-    /// currently send any `elephas://` URLs -handoff is via
+    /// currently send any `elephas://` URLs - handoff is via
     /// `NSWorkspace.open(bundleURL)`. Retained here for v1.0.1+ when a
     /// `elephas://redact/open?path=…` route is defined on both sides.
     static let urlScheme = "elephas"
@@ -56,13 +56,13 @@ enum ElephasLinks {
     /// Canonical landing URL with a tagged `?ref=…` query param.
     static func landing(_ ref: Ref) -> URL {
         guard var components = URLComponents(string: siteBase) else {
-            // siteBase is a literal -unreachable, but fall back safely.
+            // siteBase is a literal - unreachable, but fall back safely.
             return URL(string: siteBase)!
         }
         components.queryItems = [URLQueryItem(name: "ref", value: ref.rawValue)]
         return components.url!
     }
 
-    /// View-source link -the repo README lives here.
+    /// View-source link - the repo README lives here.
     static let repoURL = URL(string: "https://github.com/Kamban-Selvakumar/safepaste")!
 }

@@ -45,7 +45,7 @@ struct RootView: View {
         }
         .onAppear {
             // Defer the sheet one runloop tick so the main window is on
-            // screen first -otherwise the sheet animates in without a
+            // screen first - otherwise the sheet animates in without a
             // backdrop on fresh launches.
             if prefs.needsOnboarding {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
@@ -169,7 +169,7 @@ private struct ModelPreparingOverlay: View {
             Text("\(Int(fraction * 100))%")
                 .font(Design.Font.monoSmall)
                 .foregroundStyle(.secondary)
-            Text("SafePaste runs 100% on your Mac -nothing leaves this device.")
+            Text("SafePaste runs 100% on your Mac. Nothing leaves this device.")
                 .font(Design.Font.caption)
                 .foregroundStyle(.secondary.opacity(0.8))
                 .padding(.top, Design.Space.xs)

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// SwiftUI `Settings` scene body. Two tabs -General (behavioural prefs) and
+/// SwiftUI `Settings` scene body. Two tabs - General (behavioural prefs) and
 /// "More from us" (a calm Elephas pitch that respects the "never nag" rule
 /// in CLAUDE.md's attribution plan).
 struct SettingsView: View {
@@ -27,7 +27,7 @@ private struct GeneralSettingsTab: View {
                 Toggle(isOn: $prefs.watermarkEnabled) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Include SafePaste watermark on exported PDFs")
-                        Text("Small footer line: \"Redacted locally with SafePaste · elephas.app\". On by default -helps other people discover the app when you share a redacted file.")
+                        Text("Small footer line: \"Redacted locally with SafePaste · elephas.app\". On by default - helps other people discover the app when you share a redacted file.")
                             .font(Design.Font.caption)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)

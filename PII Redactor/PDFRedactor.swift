@@ -84,7 +84,7 @@ enum PDFRedactor {
                 NSGraphicsContext.restoreGraphicsState()
             }
 
-            // 3. Watermark footer line -printed in the bottom margin of every
+            // 3. Watermark footer line - printed in the bottom margin of every
             //    page. Drawn via AppKit string drawing, not Core Text, so we
             //    get automatic font substitution for the middle-dot.
             if let watermark = options.watermark, !watermark.isEmpty {
@@ -105,7 +105,7 @@ enum PDFRedactor {
     }
 
     /// Render a PDFPage into the current PDF context as a raster image.
-    /// This is the "image rewrite" step -any text layer in the source PDF is
+    /// This is the "image rewrite" step - any text layer in the source PDF is
     /// intentionally not preserved so redacted content cannot be recovered via
     /// copy/paste, accessibility APIs, or PDF text extraction tools.
     private static func renderPageAsImage(
