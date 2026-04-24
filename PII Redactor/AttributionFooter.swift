@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Persistent footer strip shown at the bottom of the main window. Mirrors
-/// the mock: "SafePaste · by the Elephas team · v1.0" on the left, "View
+/// the mock: "RedactDesk · by the Elephas team · v1.0" on the left, "View
 /// source" on the right. Tiny, muted, always-present - falls under the
 /// "Attribution" layer in the intensity gradient (background, always on).
 struct AttributionFooter: View {
@@ -13,7 +13,7 @@ struct AttributionFooter: View {
     var body: some View {
         HStack(spacing: 0) {
             HStack(spacing: 6) {
-                Text("SafePaste")
+                Text("RedactDesk")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(Design.Palette.fgMuted)
                 Text("·")

@@ -26,8 +26,8 @@ private struct GeneralSettingsTab: View {
             Section("Export") {
                 Toggle(isOn: $prefs.watermarkEnabled) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Include SafePaste watermark on exported PDFs")
-                        Text("Small footer line: \"Redacted locally with SafePaste · elephas.app\". On by default - helps other people discover the app when you share a redacted file.")
+                        Text("Include RedactDesk watermark on exported PDFs")
+                        Text("Small footer line: \"Redacted locally with RedactDesk · elephas.app\". On by default - helps other people discover the app when you share a redacted file.")
                             .font(Design.Font.caption)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
@@ -70,7 +70,7 @@ private struct MoreFromUsTab: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Elephas")
                         .font(Design.Font.title)
-                    Text("From the makers of SafePaste")
+                    Text("From the makers of RedactDesk")
                         .font(Design.Font.caption)
                         .foregroundStyle(.secondary)
                 }

@@ -3,7 +3,7 @@ import Foundation
 
 /// Detects whether Elephas is installed on the user's Mac and, if so,
 /// opens it. v1.0 uses `NSWorkspace.open(bundleURL)` (no deep link) to keep
-/// SafePaste's release train decoupled from Elephas's. A proper
+/// RedactDesk's release train decoupled from Elephas's. A proper
 /// `elephas://redact/open?path=...` handoff route requires a matching handler
 /// in Elephas's `AppDelegate`.
 enum ElephasDetector {
@@ -35,7 +35,7 @@ enum ElephasDetector {
                 // launch fails (quarantine prompt, corrupted bundle, etc.)
                 // the worst case is a silent no-op, which is acceptable for
                 // a promotional button.
-                NSLog("SafePaste: failed to open Elephas -\(error.localizedDescription)")
+                NSLog("RedactDesk: failed to open Elephas -\(error.localizedDescription)")
             }
         }
     }

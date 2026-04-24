@@ -1,7 +1,7 @@
 import Foundation
 
 /// Centralised Elephas-facing URLs and identifiers. Every outbound link from
-/// SafePaste flows through here so that:
+/// RedactDesk flows through here so that:
 ///
 /// 1. The `?ref=` attribution param can never be forgotten at a call site.
 ///    Each surface gets its own `Ref` case, and the URL builder always
@@ -29,7 +29,7 @@ enum ElephasLinks {
 
     // MARK: - URL scheme
 
-    /// Registered by Elephas in its Info.plist. SafePaste v1.0 does not
+    /// Registered by Elephas in its Info.plist. RedactDesk v1.0 does not
     /// currently send any `elephas://` URLs - handoff is via
     /// `NSWorkspace.open(bundleURL)`. Retained here for v1.0.1+ when a
     /// `elephas://redact/open?path=…` route is defined on both sides.
@@ -42,13 +42,13 @@ enum ElephasLinks {
     // analytics can aggregate over time.
 
     enum Ref: String {
-        case welcome   = "safepaste-welcome"
-        case postExport = "safepaste-postexport"
-        case handoff   = "safepaste-handoff"
-        case settings  = "safepaste-settings"
-        case about     = "safepaste-about"
-        case footer    = "safepaste-footer"
-        case helpMenu  = "safepaste-help"
+        case welcome   = "redactdesk-welcome"
+        case postExport = "redactdesk-postexport"
+        case handoff   = "redactdesk-handoff"
+        case settings  = "redactdesk-settings"
+        case about     = "redactdesk-about"
+        case footer    = "redactdesk-footer"
+        case helpMenu  = "redactdesk-help"
     }
 
     // MARK: - URL builders
@@ -64,5 +64,5 @@ enum ElephasLinks {
     }
 
     /// View-source link - the repo README lives here.
-    static let repoURL = URL(string: "https://github.com/kambanthemaker/safepaste")!
+    static let repoURL = URL(string: "https://github.com/RedactDesk/redactdesk-mac")!
 }

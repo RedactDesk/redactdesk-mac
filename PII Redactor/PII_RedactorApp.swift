@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Retains the `PII_RedactorApp` type name to avoid a full Xcode-target
-/// rename; the user-facing product is "SafePaste" (see
+/// rename; the user-facing product is "RedactDesk" (see
 /// INFOPLIST_KEY_CFBundleDisplayName in the build settings).
 @main
 struct PII_RedactorApp: App {
@@ -14,7 +14,7 @@ struct PII_RedactorApp: App {
                 .environmentObject(controller)
                 .environmentObject(prefs)
                 .frame(minWidth: 980, minHeight: 640)
-                .navigationTitle("SafePaste")
+                .navigationTitle("RedactDesk")
         }
         .windowToolbarStyle(.unified(showsTitle: true))
         .commands {
@@ -29,10 +29,10 @@ struct PII_RedactorApp: App {
                     .disabled(!controller.canExport)
             }
             CommandGroup(replacing: .appInfo) {
-                Button("About SafePaste") { showAbout() }
+                Button("About RedactDesk") { showAbout() }
             }
             CommandGroup(replacing: .help) {
-                Button("SafePaste Help") {
+                Button("RedactDesk Help") {
                     NSWorkspace.shared.open(ElephasLinks.repoURL)
                 }
                 Divider()
@@ -54,7 +54,7 @@ struct PII_RedactorApp: App {
     private func showAbout() {
         let creditsHTML = """
         <p style="font-family:-apple-system; font-size:11px; color:#374151; line-height:1.5; text-align:center;">
-        SafePaste redacts sensitive information from PDFs entirely on your Mac.<br/>
+        RedactDesk redacts sensitive information from PDFs entirely on your Mac.<br/>
         Nothing is sent to any server.
         </p>
         <p style="font-family:-apple-system; font-size:11px; color:#6B7280; line-height:1.5; text-align:center;">
@@ -77,7 +77,7 @@ struct PII_RedactorApp: App {
 
         NSApp.orderFrontStandardAboutPanel(options: [
             NSApplication.AboutPanelOptionKey.credits: credits,
-            NSApplication.AboutPanelOptionKey.applicationName: "SafePaste",
+            NSApplication.AboutPanelOptionKey.applicationName: "RedactDesk",
         ])
     }
 }

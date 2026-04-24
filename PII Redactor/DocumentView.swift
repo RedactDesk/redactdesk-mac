@@ -157,7 +157,7 @@ private struct ExportStatusBar: View {
 //   1. Confirm the redaction ("N items redacted locally"),
 //   2. Give a calm, one-line Elephas pitch,
 //   3. Offer a contextual handoff (Open in Elephas if installed, else a
-//      link to elephas.app with a `?ref=safepaste-handoff` param).
+//      link to elephas.app with a `?ref=redactdesk-handoff` param).
 // Stays present for the session; there's no "dismiss" because the user
 // already initiated the action and the copy is unobtrusive.
 private struct PostExportCard: View {
@@ -181,7 +181,7 @@ private struct PostExportCard: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(Design.Palette.fg)
 
-                Text("Exported to \(exportedURL.lastPathComponent). SafePaste handles PDFs. Elephas redacts across your whole workspace, with an optional local processing mode.")
+                Text("Exported to \(exportedURL.lastPathComponent). RedactDesk handles PDFs. Elephas redacts across your whole workspace, with an optional local processing mode.")
                     .font(Design.Font.caption)
                     .foregroundStyle(Design.Palette.fgMuted)
                     .lineLimit(2)

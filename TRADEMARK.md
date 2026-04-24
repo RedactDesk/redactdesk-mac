@@ -1,6 +1,6 @@
 # Trademark Policy
 
-"SafePaste" is a trademark of Elephas. The SafePaste name, logo, and
+"RedactDesk" is a trademark of Elephas. The RedactDesk name, logo, and
 app icon are not covered by the MIT license that governs the source
 code in this repository.
 
@@ -12,27 +12,27 @@ and redistribute the source and binaries under the terms of
 
 ## What the trademark reserves
 
-The name "SafePaste," the SafePaste wordmark, and the SafePaste icon
+The name "RedactDesk," the RedactDesk wordmark, and the RedactDesk icon
 are not part of that grant. In particular:
 
 - **Forks must use a different name.** If you publish a fork, a
   derivative, or a redistribution, pick your own name and icon. Do not
-  call it "SafePaste," "SafePaste (fork)," "Open SafePaste,"
-  "SafePaste Community Edition," or any confusingly similar variant.
+  call it "RedactDesk," "RedactDesk (fork)," "Open RedactDesk,"
+  "RedactDesk Community Edition," or any confusingly similar variant.
 - **Do not imply endorsement.** Do not describe your fork as "official,"
   "certified," "supported by Elephas," or otherwise suggest affiliation
   with or approval by Elephas.
-- **Do not ship the SafePaste icon.** Replace the app icon assets in
+- **Do not ship the RedactDesk icon.** Replace the app icon assets in
   `PII Redactor/Assets.xcassets/AppIcon.appiconset/` with your own
   artwork before distributing a build under a different name.
 
 ## What is fine
 
-- Saying "based on SafePaste" or "forked from SafePaste" in your
+- Saying "based on RedactDesk" or "forked from RedactDesk" in your
   README, changelog, or credits, as a factual statement of origin.
 - Linking to the upstream repository at
-  <https://github.com/kambanthemaker/safepaste>.
-- Using the SafePaste name in reviews, tutorials, articles, and other
+  <https://github.com/RedactDesk/redactdesk-mac>.
+- Using the RedactDesk name in reviews, tutorials, articles, and other
   editorial contexts.
 
 ## Questions

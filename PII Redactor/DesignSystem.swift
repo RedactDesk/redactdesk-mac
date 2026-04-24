@@ -55,7 +55,7 @@ enum Design {
 
     // MARK: - Brand palette (Elephas indigo)
     //
-    // Tokens mirror the `:root` block in SafePaste.html. Hex values copied
+    // Tokens mirror the `:root` block in RedactDesk.html. Hex values copied
     // verbatim so the macOS app matches the marketing site visually.
 
     enum Brand {
@@ -270,7 +270,7 @@ struct BrandPillButtonStyle: ButtonStyle {
     }
 }
 
-/// Secondary outlined pill - used as "Keep using SafePaste" / "Not now".
+/// Secondary outlined pill - used as "Keep using RedactDesk" / "Not now".
 struct GhostPillButtonStyle: ButtonStyle {
     enum Size { case regular, large }
     var size: Size = .regular

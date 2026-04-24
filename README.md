@@ -1,10 +1,10 @@
-# SafePaste
+# RedactDesk
 
 > Redact PII from any PDF, 100% on your Mac. No cloud, no telemetry.
 
-Made by the [Elephas](https://elephas.app?ref=safepaste-github) team.
+Made by the [Elephas](https://elephas.app?ref=redactdesk-github) team.
 
-SafePaste is a free, open-source macOS app that removes personally identifiable
+RedactDesk is a free, open-source macOS app that removes personally identifiable
 information from PDFs — names, emails, phone numbers, addresses, dates, URLs,
 account numbers, and secrets — using OpenAI's
 [privacy-filter](https://huggingface.co/openai/privacy-filter) model running
@@ -39,19 +39,24 @@ macOS 14 Sonoma or later, Intel and Apple Silicon.
 ### Steps
 
 ```bash
-git clone https://github.com/kambanthemaker/safepaste.git
-cd safepaste
+git clone https://github.com/RedactDesk/redactdesk-mac.git
+cd redactdesk-mac
 open "PII Redactor.xcodeproj"
 # Cmd-R to build and run.
 ```
 
+> The Xcode project and target folders are still named `PII Redactor`
+> from the original template. Only the display name, bundle ID
+> (`com.kamban.redactdesk`), and user-facing copy were renamed. Leave
+> the folders alone.
+
 The first launch downloads the openai/privacy-filter ONNX weights
-(~917 MB) into the app's sandbox cache (`~/Library/Containers/com.kamban.safepaste/Data/Library/Caches/`).
+(~917 MB) into the app's sandbox cache (`~/Library/Containers/com.kamban.redactdesk/Data/Library/Caches/`).
 Subsequent launches load instantly from the local merged model.
 
 ## Distribution
 
-SafePaste ships as a notarized direct download from the team's website
+RedactDesk ships as a notarized direct download from the team's website
 (not the Mac App Store). The repo is MIT-licensed, so you can build
 from source and run locally for free. If you prefer a signed,
 auto-updating binary with support, grab it from the product page.
@@ -72,20 +77,20 @@ See [`CLAUDE.md`](CLAUDE.md) for architectural decisions and gotchas.
 
 ## About Elephas
 
-SafePaste is built and maintained by the team behind
-[**Elephas**](https://elephas.app?ref=safepaste-github-about) - a Mac
+RedactDesk is built and maintained by the team behind
+[**Elephas**](https://elephas.app?ref=redactdesk-github-about) - a Mac
 app for working with sensitive documents in AI. Elephas does
 folder-wide redaction, summarization, and sensitive-document search,
 with a fully local processing mode for teams that cannot send data to
 the cloud.
 
-SafePaste is a small, open-source slice of that world, focused on one
+RedactDesk is a small, open-source slice of that world, focused on one
 job: redacting PII from a single PDF, free forever. If you want the
 full workflow - across folders, with chat, search, and summarization -
 take a look at Elephas.
 
-- Website: <https://elephas.app?ref=safepaste-github-about>
-- SafePaste is MIT-licensed; Elephas is a separate commercial product.
+- Website: <https://elephas.app?ref=redactdesk-github-about>
+- RedactDesk is MIT-licensed; Elephas is a separate commercial product.
 
 ## Acknowledgments
 
@@ -96,6 +101,6 @@ take a look at Elephas.
 
 ## License
 
-Code is MIT - see [LICENSE](LICENSE). The "SafePaste" name and icon
+Code is MIT - see [LICENSE](LICENSE). The "RedactDesk" name and icon
 are a trademark of Elephas and are not covered by the MIT grant - see
 [TRADEMARK.md](TRADEMARK.md) before forking.

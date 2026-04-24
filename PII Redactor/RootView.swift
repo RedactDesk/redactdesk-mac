@@ -154,7 +154,7 @@ private struct ModelPreparingOverlay: View {
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(Color.accentColor)
             VStack(spacing: 4) {
-                Text("Setting up SafePaste")
+                Text("Setting up RedactDesk")
                     .font(Design.Font.title)
                 Text(phase)
                     .font(Design.Font.callout)
@@ -167,7 +167,7 @@ private struct ModelPreparingOverlay: View {
             Text("\(Int(fraction * 100))%")
                 .font(Design.Font.monoSmall)
                 .foregroundStyle(.secondary)
-            Text("SafePaste runs 100% on your Mac. Nothing leaves this device.")
+            Text("RedactDesk runs 100% on your Mac. Nothing leaves this device.")
                 .font(Design.Font.caption)
                 .foregroundStyle(.secondary.opacity(0.8))
                 .padding(.top, Design.Space.xs)
@@ -197,7 +197,7 @@ private struct ModelFailureOverlay: View {
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(Color.red)
             VStack(spacing: 4) {
-                Text("Could not set up SafePaste")
+                Text("Could not set up RedactDesk")
                     .font(Design.Font.title)
                 Text(message)
                     .font(Design.Font.callout)

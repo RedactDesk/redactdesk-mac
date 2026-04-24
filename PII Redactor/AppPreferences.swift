@@ -2,12 +2,12 @@ import Combine
 import Foundation
 import SwiftUI
 
-/// Central wrapper around `UserDefaults` for SafePaste preferences that need
+/// Central wrapper around `UserDefaults` for RedactDesk preferences that need
 /// to persist across launches. Exposed as a single `@MainActor` observable so
 /// views can `@EnvironmentObject` it and react to toggles without each view
 /// threading its own `@AppStorage` key.
 ///
-/// Keys are namespaced `safepaste.*` to keep the plist legible during debug.
+/// Keys are namespaced `redactdesk.*` to keep the plist legible during debug.
 @MainActor
 final class AppPreferences: ObservableObject {
     static let shared = AppPreferences()
@@ -18,9 +18,9 @@ final class AppPreferences: ObservableObject {
     static let currentOnboardingVersion: Int = 1
 
     private enum Key {
-        static let onboardingCompletedVersion = "safepaste.onboarding.completedVersion"
-        static let watermarkEnabled           = "safepaste.export.watermarkEnabled"
-        static let redactionCount             = "safepaste.stats.redactionCount"
+        static let onboardingCompletedVersion = "redactdesk.onboarding.completedVersion"
+        static let watermarkEnabled           = "redactdesk.export.watermarkEnabled"
+        static let redactionCount             = "redactdesk.stats.redactionCount"
     }
 
     private let defaults: UserDefaults

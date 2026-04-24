@@ -51,7 +51,7 @@ struct WelcomeView: View {
                 .foregroundStyle(Design.Palette.fg)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("SafePaste finds sensitive information in PDFs (names, emails, phone numbers, addresses, account numbers) and removes it cleanly, so you can share the redacted copy with any AI or any person without worry.")
+            Text("RedactDesk finds sensitive information in PDFs (names, emails, phone numbers, addresses, account numbers) and removes it cleanly, so you can share the redacted copy with any AI or any person without worry.")
                 .font(Design.Font.body)
                 .foregroundStyle(Design.Palette.fgMuted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -69,7 +69,7 @@ struct WelcomeView: View {
     }
 
     /// Small trust caption under the feature chips. Cites the open-source
-    /// model SafePaste uses, with a tap-to-open link to OpenAI's launch post.
+    /// model RedactDesk uses, with a tap-to-open link to OpenAI's launch post.
     /// Rendered via SwiftUI markdown so the link is keyboard-accessible and
     /// respects the accent tint without us hand-rolling an NSAttributedString.
     private var poweredByLine: some View {
@@ -88,7 +88,7 @@ struct WelcomeView: View {
                 .foregroundStyle(Design.Palette.fg)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text("Elephas is our full Mac app for working with sensitive documents in AI: folder-wide redaction, summarization, and sensitive-document search, with a fully local processing mode. SafePaste is a small, open-source slice of that world.")
+            Text("Elephas is our full Mac app for working with sensitive documents in AI: folder-wide redaction, summarization, and sensitive-document search, with a fully local processing mode. RedactDesk is a small, open-source slice of that world.")
                 .font(Design.Font.body)
                 .foregroundStyle(Design.Palette.fgMuted)
                 .fixedSize(horizontal: false, vertical: true)
@@ -119,7 +119,7 @@ struct WelcomeView: View {
                 }
                 .buttonStyle(GhostPillButtonStyle(size: .large))
 
-                Button("Start using SafePaste") {
+                Button("Start using RedactDesk") {
                     dismiss()
                 }
                 .buttonStyle(BrandPillButtonStyle(size: .large))

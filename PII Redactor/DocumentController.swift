@@ -209,7 +209,7 @@ final class DocumentController: ObservableObject {
     private func export(to destination: URL, loaded: LoadedDocument) {
         exportState = .exporting(fraction: 0)
         let watermark = AppPreferences.shared.watermarkEnabled
-            ? "Redacted locally with SafePaste · elephas.app"
+            ? "Redacted locally with RedactDesk · elephas.app"
             : nil
         let options = PDFRedactor.Options(
             enabled: enabledCategories,

@@ -4,11 +4,16 @@ Orientation for Claude Code (and any AI collaborator) working in this repo.
 
 ## What this project is
 
-**SafePaste** is an open-source (MIT) macOS app that redacts PII from PDFs
+**RedactDesk** is an open-source (MIT) macOS app that redacts PII from PDFs
 entirely on-device. Text model + PDFKit + SwiftUI. The user name shown
-in-app and in marketing is "SafePaste"; the Xcode target + source folders
+in-app and in marketing is "RedactDesk"; the Xcode target + source folders
 are still named "PII Redactor" from the original template (soft-rename  -
 renaming the folders involves a risky pbxproj shuffle, deferred).
+
+The bundle ID is `com.kamban.redactdesk`. The display name, bundle ID,
+and all user-facing copy were renamed from the previous "SafePaste"
+branding; the on-disk Xcode target and folder names were intentionally
+left alone.
 
 **Distribution**: direct download from the team's website, not the Mac App
 Store. Repo is MIT so anyone can build from source for free; the signed,
@@ -42,7 +47,7 @@ xcodebuild -project "PII Redactor.xcodeproj" -resolvePackageDependencies
 
 The model is **not bundled in the repo or the .app**. First launch
 downloads the ~917 MB ONNX weights from HuggingFace Hub into
-`~/Library/Containers/com.kamban.safepaste/Data/Library/Caches/huggingface/`
+`~/Library/Containers/com.kamban.redactdesk/Data/Library/Caches/huggingface/`
 and runs `ModelMerger` once to produce a self-contained merged `.onnx`.
 Subsequent launches reuse that cached file with no network.
 
