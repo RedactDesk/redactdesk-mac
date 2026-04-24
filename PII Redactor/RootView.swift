@@ -6,34 +6,59 @@ import UniformTypeIdentifiers
 /// first-run model preparation overlay.
 struct RootView: View {
     @EnvironmentObject private var controller: DocumentController
+    @EnvironmentObject private var prefs: AppPreferences
     @State private var isDraggingOverWindow: Bool = false
+    @State private var showWelcome: Bool = false
 
     var body: some View {
-        ZStack {
-            backgroundLayer
-            Group {
-                if controller.hasDocument {
-                    DocumentView()
-                } else {
-                    EmptyStateView(isDraggingOver: $isDraggingOverWindow)
+        VStack(spacing: 0) {
+            ZStack {
+                backgroundLayer
+                Group {
+                    if controller.hasDocument {
+                        DocumentView()
+                    } else {
+                        EmptyStateView(isDraggingOver: $isDraggingOverWindow)
+                    }
+                }
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.2), value: controller.hasDocument)
+
+                if case .preparing(let fraction, let phase) = controller.modelState,
+                   !controller.hasDocument {
+                    ModelPreparingOverlay(fraction: fraction, phase: phase)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
+                if case .failed(let message) = controller.modelState {
+                    ModelFailureOverlay(message: message) { controller.prepareModel() }
+                        .transition(.opacity)
                 }
             }
-            .transition(.opacity)
-            .animation(.easeInOut(duration: 0.2), value: controller.hasDocument)
-
-            if case .preparing(let fraction, let phase) = controller.modelState,
-               !controller.hasDocument {
-                ModelPreparingOverlay(fraction: fraction, phase: phase)
-                    .transition(.opacity.combined(with: .move(edge: .top)))
-            }
-            if case .failed(let message) = controller.modelState {
-                ModelFailureOverlay(message: message) { controller.prepareModel() }
-                    .transition(.opacity)
-            }
+            AttributionFooter()
         }
         .toolbar { toolbarContent }
         .onDrop(of: [.fileURL], isTargeted: $isDraggingOverWindow) { providers in
             handleDrop(providers: providers)
+        }
+        .sheet(isPresented: $showWelcome) {
+            WelcomeView(isPresented: $showWelcome)
+        }
+        .onAppear {
+            // Defer the sheet one runloop tick so the main window is on
+            // screen first -otherwise the sheet animates in without a
+            // backdrop on fresh launches.
+            if prefs.needsOnboarding {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    showWelcome = true
+                }
+            }
+        }
+        .onChange(of: prefs.onboardingCompletedVersion) { _, newValue in
+            // Settings → "Show welcome again" resets the version to 0. Re-open
+            // the sheet immediately so the user can confirm it still works.
+            if newValue < AppPreferences.currentOnboardingVersion {
+                showWelcome = true
+            }
         }
     }
 
@@ -144,7 +169,7 @@ private struct ModelPreparingOverlay: View {
             Text("\(Int(fraction * 100))%")
                 .font(Design.Font.monoSmall)
                 .foregroundStyle(.secondary)
-            Text("SafePaste runs 100% on your Mac — nothing leaves this device.")
+            Text("SafePaste runs 100% on your Mac -nothing leaves this device.")
                 .font(Design.Font.caption)
                 .foregroundStyle(.secondary.opacity(0.8))
                 .padding(.top, Design.Space.xs)

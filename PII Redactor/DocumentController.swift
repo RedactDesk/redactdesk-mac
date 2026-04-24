@@ -208,9 +208,16 @@ final class DocumentController: ObservableObject {
 
     private func export(to destination: URL, loaded: LoadedDocument) {
         exportState = .exporting(fraction: 0)
-        let options = PDFRedactor.Options(enabled: enabledCategories)
+        let watermark = AppPreferences.shared.watermarkEnabled
+            ? "Redacted locally with SafePaste · elephas.app"
+            : nil
+        let options = PDFRedactor.Options(
+            enabled: enabledCategories,
+            watermark: watermark
+        )
         let spansCopy = spans
         let sourceDoc = loaded.document
+        let redactedCount = spans.totalCount
 
         Task.detached(priority: .userInitiated) {
             do {
@@ -225,7 +232,14 @@ final class DocumentController: ObservableObject {
                         }
                     }
                 )
-                await MainActor.run { self.exportState = .done(destination) }
+                await MainActor.run {
+                    self.exportState = .done(destination)
+                    // One export == one "redaction" for milestone purposes.
+                    // We count the event, not the entity count, to keep the
+                    // counter stable across the input's PII density.
+                    _ = redactedCount
+                    AppPreferences.shared.incrementRedactionCount()
+                }
             } catch {
                 await MainActor.run {
                     self.exportState = .failed(error.localizedDescription)

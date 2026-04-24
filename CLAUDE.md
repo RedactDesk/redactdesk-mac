@@ -7,14 +7,14 @@ Orientation for Claude Code (and any AI collaborator) working in this repo.
 **SafePaste** is an open-source (MIT) macOS app that redacts PII from PDFs
 entirely on-device. Text model + PDFKit + SwiftUI. The user name shown
 in-app and in marketing is "SafePaste"; the Xcode target + source folders
-are still named "PII Redactor" from the original template (soft-rename —
+are still named "PII Redactor" from the original template (soft-rename  -
 renaming the folders involves a risky pbxproj shuffle, deferred).
 
 **Distribution**: direct download from the team's website, not the Mac App
 Store. Repo is MIT so anyone can build from source for free; the signed,
 notarized binary is sold as a separate paid download. Don't propose MAS
 submission work (StoreKit receipt validation, MAS sandbox quirks, App Store
-Connect pricing) — it's explicitly off the roadmap.
+Connect pricing) - it's explicitly off the roadmap.
 
 The underlying ML pipeline is `openai/privacy-filter` (a token-classification
 model) running via ONNX Runtime with the CoreML execution provider. Exported
@@ -54,12 +54,12 @@ sidebar detections, export, inspect the resulting PDF in Preview.
 | Layer | Files | Role |
 |---|---|---|
 | Design tokens | `PII Redactor/DesignSystem.swift` | All colors, spacing, fonts, the 8-category palette (color + icon + title). Any new view should read from here. |
-| Model runtime | `PII Redactor/PrivacyFilter.swift` | `actor PrivacyFilter` — loads model, runs per-text detection, emits `RedactionSpan`s. |
-| Model prep | `PII Redactor/ModelMerger.swift` | Inlines ONNX external weights into a single `.onnx` file — required workaround for ORT CoreML EP bug (see "Gotchas"). |
+| Model runtime | `PII Redactor/PrivacyFilter.swift` | `actor PrivacyFilter` - loads model, runs per-text detection, emits `RedactionSpan`s. |
+| Model prep | `PII Redactor/ModelMerger.swift` | Inlines ONNX external weights into a single `.onnx` file - required workaround for ORT CoreML EP bug (see "Gotchas"). |
 | Protobuf | `PII Redactor/Onnx.pb.swift` | Generated from `onnx/onnx.proto v1.17.0`. **Do not hand-edit.** Regenerate via `protoc --swift_opt=Visibility=Public --swift_out=. onnx.proto`. |
 | PDF pipeline | `PII Redactor/PDFExtractor.swift` | PDFKit → page text + PDFPage reference. |
-|  | `PII Redactor/Redaction.swift` | `PageSpan`, `DocumentSpans`, `SpanMapper` — maps model spans to PDF rectangles. |
-|  | `PII Redactor/PDFRedactor.swift` | Image-rewrite export — renders each page as a bitmap + overlays black rects. |
+|  | `PII Redactor/Redaction.swift` | `PageSpan`, `DocumentSpans`, `SpanMapper` - maps model spans to PDF rectangles. |
+|  | `PII Redactor/PDFRedactor.swift` | Image-rewrite export - renders each page as a bitmap + overlays black rects. |
 | Orchestration | `PII Redactor/DocumentController.swift` | `@MainActor ObservableObject` driving model prep, load, detection, export. |
 | UI | `PII Redactor/RootView.swift` | Router: empty state ↔ document view, model-preparing overlay, toolbar. |
 |  | `PII Redactor/EmptyStateView.swift` | First-launch drop zone + feature cards. |
@@ -73,7 +73,7 @@ sidebar detections, export, inspect the resulting PDF in Preview.
 ### 1. Image-rewrite redaction, not PDF content-stream editing
 
 `PDFRedactor` renders each PDF page to a bitmap and writes that as the new
-page — the source PDF's text layer doesn't survive. Any selection, copy, or
+page - the source PDF's text layer doesn't survive. Any selection, copy, or
 PDF-to-text extraction on the output yields no PII. This is simpler than
 editing the PDF content stream in-place (which would need PSPDFKit or a
 hand-rolled content-stream editor) and is genuinely more thorough: the data is
@@ -90,7 +90,7 @@ text in `page.text` (walking a cursor forward to disambiguate duplicates),
 then call `PDFPage.selection(for: NSRange)` and `selectionsByLine()` for
 pixel-accurate rects. Early implementation used per-scalar
 `PDFPage.characterBounds(at:)` + a manual line-fusion heuristic, indexed by
-the token-decoded offset — that drifted by 1–3 characters because BPE
+the token-decoded offset - that drifted by 1–3 characters because BPE
 encode/decode isn't exactly identity. Don't revert to offset-based indexing.
 
 ### 3. ModelMerger inlines external weights
@@ -111,7 +111,7 @@ the cache.
 ### 4. MainActor isolation default removed
 
 The project has **not** set `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` on
-purpose — that default was applying MainActor to the generated protobuf
+purpose - that default was applying MainActor to the generated protobuf
 types, breaking their `Sendable` conformance to SwiftProtobuf's `Message`
 protocol. Types that genuinely need MainActor (`RedactorViewModel`, SwiftUI
 `View`s) annotate it explicitly. Don't reintroduce the default.
@@ -129,7 +129,7 @@ swapping the ORT runtime distribution.
 
 `PrivacyFilter.ModelVariant.q4` (`model_q4.onnx`, int4 weights, fp32 logits).
 `.quantized` (int8) is also wired if smaller model size is ever preferred.
-Don't add fp16 variants — the ORT Obj-C binding doesn't expose a `.float16`
+Don't add fp16 variants - the ORT Obj-C binding doesn't expose a `.float16`
 element type, so we can't read fp16 logits.
 
 ## Gotchas
@@ -144,7 +144,7 @@ element type, so we can't read fp16 logits.
   to PDFKit, use `NSRange` over `page.text`, not scalar offsets.
 - **CoreML EP partition count is low**: ~148/331 nodes get accepted by CoreML
   on Apple Silicon. The rest run on CPU. Don't spend time optimizing the
-  partition count — the model is small and the CoreML↔CPU boundary cost is
+  partition count - the model is small and the CoreML↔CPU boundary cost is
   marginal.
 - **Tokenizer offsets are in decoded space, not input space**: if you need
   input-space offsets, locate by text search in `page.text` (what
@@ -164,12 +164,17 @@ element type, so we can't read fp16 logits.
 - **Git commits**: descriptive subject + wrapped body. The trailer
   `Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>`
   is appropriate when Claude materially contributed.
+- **Punctuation**: no em-dashes (`U+2014`) and no smart quotes (`U+2018`,
+  `U+2019`, `U+201C`, `U+201D`) anywhere: source files, comments, UI copy,
+  commit messages, docs. Use ` - ` (ASCII hyphen with spaces) or split the
+  sentence instead of an em-dash. Use straight quotes `'` and `"` only.
+  Applies to everything you author, not just code.
 
 ## What this repo is **not**
 
 - Not a general-purpose ML inference wrapper. It's tailored to
   `openai/privacy-filter`'s exact architecture and labels.
-- Not a PDF editor. It only consumes and produces PDFs — no page reorder,
+- Not a PDF editor. It only consumes and produces PDFs - no page reorder,
   annotation, signing, etc.
 - Not a cloud product. Any contribution that phones home or adds telemetry
   (beyond the one-time HuggingFace model download) will be rejected.

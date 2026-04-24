@@ -5,8 +5,8 @@ import AppKit
 
 /// Image-rewrite PDF redactor. Each page is rendered to a bitmap, redaction
 /// rects are painted as solid black boxes, and the result is composed back
-/// into a fresh single-file PDF. The output has no selectable text layer —
-/// redacted content is physically gone, not just hidden.
+/// into a fresh single-file PDF. The output has no selectable text layer.
+/// Redacted content is physically gone, not just hidden.
 enum PDFRedactor {
     enum ExportError: LocalizedError {
         case couldNotCreateContext
@@ -30,6 +30,10 @@ enum PDFRedactor {
         var scale: CGFloat = 2.0
         /// Extra padding around each black box, in PDF points.
         var rectPadding: CGFloat = 1.5
+        /// Footer attribution text. `nil` disables the watermark. Respected
+        /// per-export rather than read from preferences directly so the
+        /// redactor remains a pure function over its inputs.
+        var watermark: String? = nil
     }
 
     /// Writes a redacted copy of `source` to `outputURL`.
@@ -80,6 +84,16 @@ enum PDFRedactor {
                 NSGraphicsContext.restoreGraphicsState()
             }
 
+            // 3. Watermark footer line -printed in the bottom margin of every
+            //    page. Drawn via AppKit string drawing, not Core Text, so we
+            //    get automatic font substitution for the middle-dot.
+            if let watermark = options.watermark, !watermark.isEmpty {
+                NSGraphicsContext.saveGraphicsState()
+                NSGraphicsContext.current = nsCtx
+                drawWatermark(watermark, in: box, context: context)
+                NSGraphicsContext.restoreGraphicsState()
+            }
+
             context.endPDFPage()
             progress(Double(i + 1) / Double(pageCount))
         }
@@ -91,7 +105,7 @@ enum PDFRedactor {
     }
 
     /// Render a PDFPage into the current PDF context as a raster image.
-    /// This is the "image rewrite" step — any text layer in the source PDF is
+    /// This is the "image rewrite" step -any text layer in the source PDF is
     /// intentionally not preserved so redacted content cannot be recovered via
     /// copy/paste, accessibility APIs, or PDF text extraction tools.
     private static func renderPageAsImage(
@@ -125,5 +139,38 @@ enum PDFRedactor {
             throw ExportError.couldNotRenderPage(page.pageRef?.pageNumber ?? 0)
         }
         pdfContext.draw(image, in: box)
+    }
+
+    /// Draws the attribution footer centred horizontally near the bottom of
+    /// the page. The text is intentionally small (7pt) and low-contrast (45%
+    /// gray) so it reads as a colophon rather than a banner.
+    private static func drawWatermark(
+        _ text: String,
+        in box: CGRect,
+        context: CGContext
+    ) {
+        let font = NSFont.systemFont(ofSize: 7, weight: .regular)
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.alignment = .center
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: NSColor.black.withAlphaComponent(0.45),
+            .paragraphStyle: paragraph,
+        ]
+
+        let attributed = NSAttributedString(string: text, attributes: attrs)
+        let textSize = attributed.size()
+
+        // Bottom margin: 12pt above the edge, but never overlapping the
+        // existing page content. A 24pt vertical band is plenty for a 7pt line.
+        let y: CGFloat = 10
+        let x: CGFloat = box.minX + (box.width - textSize.width) / 2
+        let drawRect = CGRect(
+            x: x,
+            y: box.minY + y,
+            width: textSize.width,
+            height: textSize.height
+        )
+        attributed.draw(in: drawRect)
     }
 }
