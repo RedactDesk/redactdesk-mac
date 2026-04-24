@@ -26,5 +26,13 @@
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <enclosure url="https://github.com/RedactDesk/redactdesk-mac/releases/download/v1.01/RedactDesk.zip" length="23498686" type="application/octet-stream" sparkle:edSignature="dIn7mO/24eoLcV/2j35fSceC18g7uqtQRDWH/NvtiKAkECiORtXZm3+7794kx0dlaQ45En3XlxgEX2aWRrPzDg==" />
         </item>
+        <item>
+            <title>1.02</title>
+            <pubDate>Fri, 24 Apr 2026 17:48:21 +0530</pubDate>
+            <sparkle:version>1.02</sparkle:version>
+            <sparkle:shortVersionString>1.02</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/RedactDesk/redactdesk-mac/releases/download/v1.02/RedactDesk.zip" length="23495841" type="application/octet-stream" sparkle:edSignature="u23kKRrB/L8I1Ky3GpQSOTPknfWaE5YMGtwr4YV4FIAWhuBHibdIrO8mUmoi2i0Fnel0ZAh97QzZWsAbMbU0CA==" />
+        </item>
     </channel>
 </rss>
