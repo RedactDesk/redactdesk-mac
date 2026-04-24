@@ -199,17 +199,22 @@ web host - release binaries are GitHub release assets.
   script `Scripts/sparkle-generate-keys.sh` is only needed if the key ever
   gets rotated.
 - `Scripts/release-publish.sh <version>` is the one-shot publish command.
-  It consumes the build output in `$RELEASE_BASE/1.0x/<version>/` (expects
-  `RedactDesk.app`, `RedactDesk.zip`, and the signed `appcast.xml` from the
-  Sparkle signing step), builds `RedactDesk.dmg` via `create-dmg` if one
-  isn't already there, rewrites the `<enclosure url>` to point at the
-  GitHub release download for `vX.Y.Z`, splices the `<item>` into the
-  tracked `appcast.xml`, runs `gh release create`, and commits + pushes.
+  Drop only `RedactDesk.app` into `$RELEASE_BASE/1.0x/<version>/` and run
+  the script. It will:
+    1. Call `Scripts/sparkle-package.sh` to zip the app (via `ditto
+       --keepParent --sequesterRsrc`) and sign it with Sparkle's
+       `generate_appcast` (EdDSA key from the login keychain).
+    2. Build `RedactDesk.dmg` via `create-dmg` if one isn't already there.
+    3. Rewrite the `<enclosure url>` to point at the GitHub release
+       download for `vX.Y.Z`, splice the `<item>` into the tracked
+       `appcast.xml`, run `gh release create`, and commit + push.
   The website's `releases/latest/download/RedactDesk.dmg` link auto-resolves
   to the new asset with no web-side changes.
-- `Scripts/sparkle-release.sh` is the lower-level helper that signs a DMG
-  and prints an `<item>` on stdout - only useful if the external build
-  pipeline ever stops producing a signed `appcast.xml`.
+- `Scripts/sparkle-package.sh` can be run on its own if you just want the
+  zip + signed appcast without cutting a release.
+- `Scripts/sparkle-release.sh` is the older lower-level helper that signs
+  a DMG and prints an `<item>` on stdout - only useful if Sparkle's
+  `generate_appcast` ever stops working.
 
 ## What this repo is **not**
 
