@@ -153,6 +153,16 @@ private struct ImageOnlyPDFBanner: View {
 
 private struct ExportStatusBar: View {
     @EnvironmentObject private var controller: DocumentController
+    @ObservedObject private var prefs = AppPreferences.shared
+
+    /// Milestone cadence for the Elephas pitch card. Shown once every N
+    /// successful exports rather than every time, so the card stays a
+    /// quiet milestone nudge instead of a persistent ad.
+    private static let pitchEvery = 10
+
+    private var isPitchMilestone: Bool {
+        prefs.redactionCount > 0 && prefs.redactionCount % Self.pitchEvery == 0
+    }
 
     var body: some View {
         Group {
@@ -171,7 +181,11 @@ private struct ExportStatusBar: View {
                 .padding(.vertical, Design.Space.sm)
                 .background(Color(NSColor.textBackgroundColor).opacity(0.6))
             case .done(let url):
-                PostExportCard(exportedURL: url)
+                if isPitchMilestone {
+                    PostExportCard(exportedURL: url)
+                } else {
+                    EmptyView()
+                }
             case .failed(let message):
                 HStack(spacing: Design.Space.sm) {
                     Image(systemName: "xmark.octagon.fill")

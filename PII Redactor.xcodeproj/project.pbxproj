@@ -32,7 +32,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A8495AD72F99FC780007EA19 /* PII Redactor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PII Redactor.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		A8495AD72F99FC780007EA19 /* RedactDesk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RedactDesk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8495AE92F99FC7B0007EA19 /* PII RedactorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PII RedactorTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A8495AF32F99FC7B0007EA19 /* PII RedactorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "PII RedactorUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -98,7 +98,7 @@
 		A8495AD82F99FC780007EA19 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A8495AD72F99FC780007EA19 /* PII Redactor.app */,
+				A8495AD72F99FC780007EA19 /* RedactDesk.app */,
 				A8495AE92F99FC7B0007EA19 /* PII RedactorTests.xctest */,
 				A8495AF32F99FC7B0007EA19 /* PII RedactorUITests.xctest */,
 			);
@@ -132,7 +132,7 @@
 				CC00AA000000000000000005 /* Sparkle */,
 			);
 			productName = "PII Redactor";
-			productReference = A8495AD72F99FC780007EA19 /* PII Redactor.app */;
+			productReference = A8495AD72F99FC780007EA19 /* RedactDesk.app */;
 			productType = "com.apple.product-type.application";
 		};
 		A8495AE82F99FC7B0007EA19 /* PII RedactorTests */ = {
@@ -421,7 +421,7 @@
 				CODE_SIGN_ENTITLEMENTS = "PII Redactor/PII Redactor.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1.01;
+				CURRENT_PROJECT_VERSION = 1.02;
 				DEVELOPMENT_TEAM = Y8TM6F3MC9;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -430,12 +430,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PII Redactor/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = RedactDesk;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Kamban. MIT License.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.01;
+				MARKETING_VERSION = 1.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kamban.redactdesk;
 				PRODUCT_NAME = RedactDesk;
 				REGISTER_APP_GROUPS = YES;
@@ -455,7 +456,7 @@
 				CODE_SIGN_ENTITLEMENTS = "PII Redactor/PII Redactor.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1.01;
+				CURRENT_PROJECT_VERSION = 1.02;
 				DEVELOPMENT_TEAM = Y8TM6F3MC9;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -464,12 +465,13 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "PII Redactor/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = RedactDesk;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Kamban. MIT License.";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.01;
+				MARKETING_VERSION = 1.02;
 				PRODUCT_BUNDLE_IDENTIFIER = com.kamban.redactdesk;
 				PRODUCT_NAME = RedactDesk;
 				REGISTER_APP_GROUPS = YES;

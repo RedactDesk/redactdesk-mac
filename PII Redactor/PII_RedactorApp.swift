@@ -16,6 +16,12 @@ struct PII_RedactorApp: App {
                 .environmentObject(prefs)
                 .frame(minWidth: 980, minHeight: 640)
                 .navigationTitle("RedactDesk")
+                // Design tokens in DesignSystem.swift are hardcoded light
+                // sRGB values (bgSoft, fg, border, GhostPill's Color.white,
+                // etc.). Rendering under dark appearance leaves text
+                // invisible on near-white surfaces. Pin the app to light
+                // until the palette has a real dark counterpart.
+                .preferredColorScheme(.light)
         }
         .windowToolbarStyle(.unified(showsTitle: true))
         .commands {
@@ -49,6 +55,7 @@ struct PII_RedactorApp: App {
         Settings {
             SettingsView()
                 .environmentObject(updater)
+                .preferredColorScheme(.light)
         }
     }
 
