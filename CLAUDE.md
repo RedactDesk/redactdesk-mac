@@ -198,11 +198,18 @@ web host - release binaries are GitHub release assets.
   signs both products' updates) into `PII Redactor/Info.plist`. The helper
   script `Scripts/sparkle-generate-keys.sh` is only needed if the key ever
   gets rotated.
-- `Scripts/sparkle-release.sh <artifact> <shortVersion> <build>` signs a
-  notarized DMG and prints an `<item>` block whose enclosure URL points at
-  `github.com/RedactDesk/redactdesk-mac/releases/download/vX.Y.Z/<artifact>`.
-  Tag the GitHub release as `vX.Y.Z` and attach the DMG so that URL
-  resolves.
+- `Scripts/release-publish.sh <version>` is the one-shot publish command.
+  It consumes the build output in `$RELEASE_BASE/1.0x/<version>/` (expects
+  `RedactDesk.app`, `RedactDesk.zip`, and the signed `appcast.xml` from the
+  Sparkle signing step), builds `RedactDesk.dmg` via `create-dmg` if one
+  isn't already there, rewrites the `<enclosure url>` to point at the
+  GitHub release download for `vX.Y.Z`, splices the `<item>` into the
+  tracked `appcast.xml`, runs `gh release create`, and commits + pushes.
+  The website's `releases/latest/download/RedactDesk.dmg` link auto-resolves
+  to the new asset with no web-side changes.
+- `Scripts/sparkle-release.sh` is the lower-level helper that signs a DMG
+  and prints an `<item>` on stdout - only useful if the external build
+  pipeline ever stops producing a signed `appcast.xml`.
 
 ## What this repo is **not**
 

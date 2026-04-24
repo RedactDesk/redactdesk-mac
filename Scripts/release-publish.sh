@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+#
+# Publishes a new RedactDesk release in one shot:
+#
+#   1. Validates that the working tree is clean and a signed SUPublicEDKey
+#      is in the Info.plist (refuses to ship an unsigned build).
+#   2. Builds RedactDesk.dmg from the .app via create-dmg if one does not
+#      already exist next to it.
+#   3. Rewrites the enclosure URL in RedactOutput/<track>/<version>/appcast.xml
+#      so that it points at the GitHub Releases download for this tag.
+#   4. Prepends the rewritten <item> to the repo-tracked appcast.xml.
+#   5. Creates the GitHub release (tag vX.Y.Z) with the DMG + ZIP as assets.
+#   6. Commits and pushes the appcast.xml update.
+#
+# Usage:
+#   Scripts/release-publish.sh <version> [--track 1.0x]
+#
+# Example:
+#   Scripts/release-publish.sh 1.01
+#
+# Layout expected under $RELEASE_BASE/<track>/<version>/:
+#   RedactDesk.app          (required)
+#   RedactDesk.zip          (required - already signed by Sparkle's tooling)
+#   appcast.xml             (required - contains the signed <item> block)
+#   RedactDesk.dmg          (optional - built by this script if missing)
+#   RELEASE_NOTES.md        (optional - used as the GitHub release body)
+#
+# Env overrides:
+#   RELEASE_BASE   default: /Users/selvams/Documents/Projects/RedactDesk/RedactOutput
+#   REPO_SLUG      default: RedactDesk/redactdesk-mac
+
+set -euo pipefail
+
+RELEASE_BASE="${RELEASE_BASE:-/Users/selvams/Documents/Projects/RedactDesk/RedactOutput}"
+REPO_SLUG="${REPO_SLUG:-RedactDesk/redactdesk-mac}"
+TRACK="1.0x"
+
+# ---------- argument parsing ----------
+
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <version> [--track <track-folder>]" >&2
+    echo "e.g.   $0 1.01" >&2
+    exit 2
+fi
+
+VERSION="$1"
+shift
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --track) TRACK="$2"; shift 2 ;;
+        *) echo "Unknown arg: $1" >&2; exit 2 ;;
+    esac
+done
+
+VERSION_DIR="${RELEASE_BASE}/${TRACK}/${VERSION}"
+APP_PATH="${VERSION_DIR}/RedactDesk.app"
+ZIP_PATH="${VERSION_DIR}/RedactDesk.zip"
+DMG_PATH="${VERSION_DIR}/RedactDesk.dmg"
+SRC_APPCAST="${VERSION_DIR}/appcast.xml"
+NOTES_PATH="${VERSION_DIR}/RELEASE_NOTES.md"
+TAG="v${VERSION}"
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+REPO_APPCAST="${REPO_ROOT}/appcast.xml"
+INFO_PLIST="${REPO_ROOT}/PII Redactor/Info.plist"
+
+# ---------- preflight ----------
+
+echo "==> Preflight"
+
+for bin in gh git create-dmg python3 /usr/libexec/PlistBuddy; do
+    if ! command -v "$bin" >/dev/null 2>&1 && [[ ! -x "$bin" ]]; then
+        echo "Missing required tool: $bin" >&2
+        exit 1
+    fi
+done
+
+[[ -d "$APP_PATH"   ]] || { echo "Missing: $APP_PATH" >&2; exit 1; }
+[[ -f "$ZIP_PATH"   ]] || { echo "Missing: $ZIP_PATH" >&2; exit 1; }
+[[ -f "$SRC_APPCAST" ]] || { echo "Missing: $SRC_APPCAST" >&2; exit 1; }
+
+PUBKEY="$(/usr/libexec/PlistBuddy -c 'Print :SUPublicEDKey' "$INFO_PLIST" 2>/dev/null || echo "")"
+if [[ -z "$PUBKEY" ]]; then
+    echo "SUPublicEDKey is empty in $INFO_PLIST - refusing to ship an unverifiable build." >&2
+    exit 1
+fi
+
+cd "$REPO_ROOT"
+if [[ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]]; then
+    echo "Not on main (current: $(git rev-parse --abbrev-ref HEAD)). Switch first." >&2
+    exit 1
+fi
+if ! git diff --quiet || ! git diff --cached --quiet; then
+    echo "Working tree has uncommitted changes. Commit or stash before releasing." >&2
+    git status --short >&2
+    exit 1
+fi
+
+if gh release view "$TAG" --repo "$REPO_SLUG" >/dev/null 2>&1; then
+    echo "GitHub release $TAG already exists on $REPO_SLUG. Bump the version or delete the existing release." >&2
+    exit 1
+fi
+
+echo "    version     : ${VERSION}"
+echo "    tag         : ${TAG}"
+echo "    repo        : ${REPO_SLUG}"
+echo "    artifacts   : ${VERSION_DIR}"
+
+# ---------- DMG build ----------
+
+if [[ ! -f "$DMG_PATH" ]]; then
+    echo "==> Building DMG"
+    # create-dmg refuses to overwrite; run in a scratch dir to be safe.
+    TMP_STAGE="$(mktemp -d)"
+    trap 'rm -rf "$TMP_STAGE"' EXIT
+    cp -R "$APP_PATH" "$TMP_STAGE/"
+    create-dmg \
+        --volname "RedactDesk ${VERSION}" \
+        --window-size 520 340 \
+        --icon-size 110 \
+        --icon "RedactDesk.app" 130 150 \
+        --app-drop-link 390 150 \
+        --hide-extension "RedactDesk.app" \
+        "$DMG_PATH" \
+        "$TMP_STAGE"
+    echo "    built: $DMG_PATH"
+else
+    echo "==> Reusing existing DMG at $DMG_PATH"
+fi
+
+# ---------- rewrite appcast <item> enclosure URL ----------
+
+echo "==> Rewriting appcast enclosure URL"
+
+NEW_ZIP_URL="https://github.com/${REPO_SLUG}/releases/download/${TAG}/RedactDesk.zip"
+
+# Use python3 for XML-safe surgery: load the source appcast, rewrite the
+# enclosure url of the first <item>, then print that <item> block so we can
+# splice it into the tracked appcast.xml.
+REWRITTEN_ITEM=$(
+    NEW_ZIP_URL="$NEW_ZIP_URL" SRC_APPCAST="$SRC_APPCAST" python3 <<'PY'
+import os
+import re
+import sys
+import xml.etree.ElementTree as ET
+
+src = os.environ["SRC_APPCAST"]
+new_url = os.environ["NEW_ZIP_URL"]
+
+ns = {"sparkle": "http://www.andymatuschak.org/xml-namespaces/sparkle"}
+ET.register_namespace("sparkle", ns["sparkle"])
+tree = ET.parse(src)
+root = tree.getroot()
+item = root.find("./channel/item")
+if item is None:
+    sys.exit("No <item> found in source appcast")
+
+enclosure = item.find("./enclosure")
+if enclosure is None:
+    sys.exit("No <enclosure> found in first <item>")
+enclosure.set("url", new_url)
+
+# ET.tostring drops its own xmlns declaration for us since we registered it
+# above. We indent manually to match the existing appcast style.
+raw = ET.tostring(item, encoding="unicode")
+# Drop the redundant xmlns:sparkle that ET adds when serializing a subtree;
+# the parent <rss> already declares it. Both forms are valid XML, this one
+# just reads cleaner in git diffs.
+raw = raw.replace(' xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle"', "")
+# Pretty-print: turn `><` into `>\n        <` for readability. Safe here
+# because the <item> we generate is small and has no mixed content.
+raw = re.sub(r">(?=<)", ">\n        ", raw)
+raw = "        " + raw
+print(raw, end="")
+PY
+)
+
+# ---------- splice into repo appcast.xml ----------
+
+echo "==> Updating repo appcast.xml"
+
+# Insert the new <item> right before </channel>. We preserve any prior <item>s
+# underneath the newly prepended one so the file is a full release history.
+REPO_APPCAST="$REPO_APPCAST" REWRITTEN_ITEM="$REWRITTEN_ITEM" python3 <<'PY'
+import os
+import pathlib
+import re
+
+repo_appcast = pathlib.Path(os.environ["REPO_APPCAST"])
+new_item = os.environ["REWRITTEN_ITEM"]
+text = repo_appcast.read_text()
+
+if "</channel>" not in text:
+    raise SystemExit("appcast.xml has no </channel> close tag; refusing to edit")
+
+replacement = new_item.rstrip() + "\n    </channel>"
+text = re.sub(r"\n?\s*</channel>", "\n" + replacement, text, count=1)
+repo_appcast.write_text(text)
+PY
+
+echo "    updated: $REPO_APPCAST"
+
+# ---------- GitHub release ----------
+
+echo "==> Creating GitHub release ${TAG}"
+
+if [[ -f "$NOTES_PATH" ]]; then
+    NOTES_ARG=(--notes-file "$NOTES_PATH")
+else
+    NOTES_ARG=(--notes "RedactDesk ${VERSION}.")
+fi
+
+gh release create "$TAG" \
+    --repo "$REPO_SLUG" \
+    --title "RedactDesk ${VERSION}" \
+    "${NOTES_ARG[@]}" \
+    "$DMG_PATH" \
+    "$ZIP_PATH"
+
+# ---------- commit + push appcast ----------
+
+echo "==> Committing and pushing updated appcast.xml"
+
+git add appcast.xml
+git commit -m "Appcast: RedactDesk ${VERSION}"
+git push origin main
+
+echo
+echo "Done. Summary:"
+echo "    Sparkle feed : https://raw.githubusercontent.com/${REPO_SLUG}/main/appcast.xml"
+echo "    DMG (latest) : https://github.com/${REPO_SLUG}/releases/latest/download/RedactDesk.dmg"
+echo "    ZIP (latest) : https://github.com/${REPO_SLUG}/releases/latest/download/RedactDesk.zip"
+echo "    Release page : https://github.com/${REPO_SLUG}/releases/tag/${TAG}"
