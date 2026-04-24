@@ -18,5 +18,13 @@
             5. Commit the updated appcast.xml to main - Sparkle reads it
                straight from raw.githubusercontent.com.
         -->
+        <item>
+            <title>1.01</title>
+            <pubDate>Fri, 24 Apr 2026 15:13:51 +0530</pubDate>
+            <sparkle:version>1.01</sparkle:version>
+            <sparkle:shortVersionString>1.01</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/RedactDesk/redactdesk-mac/releases/download/v1.01/RedactDesk.zip" length="23498686" type="application/octet-stream" sparkle:edSignature="dIn7mO/24eoLcV/2j35fSceC18g7uqtQRDWH/NvtiKAkECiORtXZm3+7794kx0dlaQ45En3XlxgEX2aWRrPzDg==" />
+        </item>
     </channel>
 </rss>
