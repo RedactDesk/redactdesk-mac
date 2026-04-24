@@ -63,17 +63,15 @@ struct RootView: View {
     }
 
     // MARK: - Toolbar
+    //
+    // No left-side brand item: the AppIcon in the Dock plus the macOS window
+    // title already identify the app. Putting a ToolbarItemGroup in
+    // `.navigation` wraps it in a heavy pill under `.unified` toolbar style,
+    // which read as redundant once the icon shipped. Actions only from here
+    // down.
 
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItemGroup(placement: .navigation) {
-            Image(systemName: "shield.lefthalf.filled")
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Color.accentColor)
-            Text("SafePaste")
-                .font(Design.Font.headline)
-        }
-
         ToolbarItemGroup(placement: .primaryAction) {
             if controller.hasDocument {
                 Button(role: .destructive) {

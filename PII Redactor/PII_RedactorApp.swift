@@ -14,8 +14,9 @@ struct PII_RedactorApp: App {
                 .environmentObject(controller)
                 .environmentObject(prefs)
                 .frame(minWidth: 980, minHeight: 640)
+                .navigationTitle("SafePaste")
         }
-        .windowToolbarStyle(.unified(showsTitle: false))
+        .windowToolbarStyle(.unified(showsTitle: true))
         .commands {
             CommandGroup(replacing: .newItem) {
                 Button("Open PDF…") { controller.presentOpenPanel() }
