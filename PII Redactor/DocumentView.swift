@@ -23,6 +23,9 @@ struct DocumentView: View {
             VStack(spacing: 0) {
                 DocumentHeader()
                 HairlineDivider()
+                if doc.looksImageOnly {
+                    ImageOnlyPDFBanner()
+                }
                 PDFCanvasView(
                     document: doc.document,
                     spans: controller.spans,
@@ -106,6 +109,43 @@ private struct DocumentHeader: View {
                 .foregroundStyle(.red)
                 .lineLimit(1)
         }
+    }
+}
+
+// MARK: - Image-only PDF notice
+
+/// Shown when the loaded PDF has no extractable text layer (i.e. a scan or
+/// image export). Detection runs against PDFKit's text layer only - there
+/// is no OCR pass - so the sidebar will stay empty and the export will be
+/// a no-op mask. Tell the user plainly rather than looking broken.
+private struct ImageOnlyPDFBanner: View {
+    var body: some View {
+        HStack(alignment: .top, spacing: Design.Space.sm) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+                .font(.system(size: 13, weight: .semibold))
+                .padding(.top, 1)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("No text layer found in this PDF.")
+                    .font(Design.Font.captionStrong)
+                Text("RedactDesk reads the PDF's text layer directly and does not OCR scanned images. Run the PDF through an OCR tool first, then reopen it here.")
+                    .font(Design.Font.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Design.Space.lg)
+        .padding(.vertical, Design.Space.sm)
+        .background(Color.orange.opacity(0.1))
+        .overlay(
+            Rectangle()
+                .fill(Color.orange.opacity(0.35))
+                .frame(height: 0.5),
+            alignment: .bottom
+        )
     }
 }
 

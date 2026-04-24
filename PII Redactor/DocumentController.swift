@@ -38,6 +38,13 @@ final class DocumentController: ObservableObject {
         var filename: String { url.lastPathComponent }
         var pageCount: Int { pages.count }
 
+        /// True when no page has any extractable text. Usually means the PDF
+        /// is a scan or image-only export: PDFKit finds no text layer, the
+        /// model sees nothing, and detection returns zero spans silently.
+        var looksImageOnly: Bool {
+            !pages.isEmpty && pages.allSatisfy { $0.text.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).isEmpty }
+        }
+
         static func == (lhs: LoadedDocument, rhs: LoadedDocument) -> Bool {
             lhs.url == rhs.url && lhs.document === rhs.document
         }

@@ -42,6 +42,9 @@ struct EmptyStateView: View {
                 Text("Drop a PDF here or open one to get started.")
                     .font(Design.Font.body)
                     .foregroundStyle(.secondary)
+                Text("Text-based PDFs only. Scanned or image-only PDFs need OCR first.")
+                    .font(Design.Font.caption)
+                    .foregroundStyle(.secondary)
             }
 
             Button {
