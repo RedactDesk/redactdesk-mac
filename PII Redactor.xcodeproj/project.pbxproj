@@ -11,6 +11,7 @@
 		DD00AA000000000000000002 /* Hub in Frameworks */ = {isa = PBXBuildFile; productRef = CC00AA000000000000000002 /* Hub */; };
 		DD00AA000000000000000003 /* onnxruntime in Frameworks */ = {isa = PBXBuildFile; productRef = CC00AA000000000000000003 /* onnxruntime */; };
 		DD00AA000000000000000004 /* SwiftProtobuf in Frameworks */ = {isa = PBXBuildFile; productRef = CC00AA000000000000000004 /* SwiftProtobuf */; };
+		DD00AA000000000000000005 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = CC00AA000000000000000005 /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,6 +64,7 @@
 				DD00AA000000000000000002 /* Hub in Frameworks */,
 				DD00AA000000000000000003 /* onnxruntime in Frameworks */,
 				DD00AA000000000000000004 /* SwiftProtobuf in Frameworks */,
+				DD00AA000000000000000005 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -127,6 +129,7 @@
 				CC00AA000000000000000002 /* Hub */,
 				CC00AA000000000000000003 /* onnxruntime */,
 				CC00AA000000000000000004 /* SwiftProtobuf */,
+				CC00AA000000000000000005 /* Sparkle */,
 			);
 			productName = "PII Redactor";
 			productReference = A8495AD72F99FC780007EA19 /* PII Redactor.app */;
@@ -214,6 +217,7 @@
 				BB00AA000000000000000001 /* XCRemoteSwiftPackageReference "swift-transformers" */,
 				BB00AA000000000000000002 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */,
 				BB00AA000000000000000003 /* XCRemoteSwiftPackageReference "swift-protobuf" */,
+				BB00AA000000000000000004 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A8495AD82F99FC780007EA19 /* Products */;
@@ -424,6 +428,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PII Redactor/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = RedactDesk;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Kamban. MIT License.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -457,6 +462,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readwrite;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "PII Redactor/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = RedactDesk;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Kamban. MIT License.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -604,6 +610,8 @@
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.3.0;
 			};
+			traits = (
+			);
 		};
 		BB00AA000000000000000002 /* XCRemoteSwiftPackageReference "onnxruntime-swift-package-manager" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -619,6 +627,14 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.28.0;
+			};
+		};
+		BB00AA000000000000000004 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -643,6 +659,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = BB00AA000000000000000003 /* XCRemoteSwiftPackageReference "swift-protobuf" */;
 			productName = SwiftProtobuf;
+		};
+		CC00AA000000000000000005 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BB00AA000000000000000004 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

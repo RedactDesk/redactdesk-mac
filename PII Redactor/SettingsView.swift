@@ -20,6 +20,7 @@ struct SettingsView: View {
 
 private struct GeneralSettingsTab: View {
     @ObservedObject private var prefs = AppPreferences.shared
+    @EnvironmentObject private var updater: UpdaterViewModel
 
     var body: some View {
         Form {
@@ -32,6 +33,23 @@ private struct GeneralSettingsTab: View {
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                }
+            }
+
+            Section("Updates") {
+                Toggle(isOn: $updater.automaticallyChecksForUpdates) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Automatically check for updates")
+                        Text("RedactDesk checks for new signed releases from the project site. No telemetry - only the update manifest is fetched.")
+                            .font(Design.Font.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                HStack {
+                    Text("Check now")
+                    Spacer()
+                    CheckForUpdatesView(updater: updater)
                 }
             }
 

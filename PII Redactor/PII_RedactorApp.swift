@@ -7,6 +7,7 @@ import SwiftUI
 struct PII_RedactorApp: App {
     @StateObject private var controller = DocumentController()
     @StateObject private var prefs = AppPreferences.shared
+    @StateObject private var updater = UpdaterViewModel()
 
     var body: some Scene {
         WindowGroup {
@@ -31,6 +32,9 @@ struct PII_RedactorApp: App {
             CommandGroup(replacing: .appInfo) {
                 Button("About RedactDesk") { showAbout() }
             }
+            CommandGroup(after: .appInfo) {
+                CheckForUpdatesView(updater: updater)
+            }
             CommandGroup(replacing: .help) {
                 Button("RedactDesk Help") {
                     NSWorkspace.shared.open(ElephasLinks.repoURL)
@@ -44,6 +48,7 @@ struct PII_RedactorApp: App {
 
         Settings {
             SettingsView()
+                .environmentObject(updater)
         }
     }
 

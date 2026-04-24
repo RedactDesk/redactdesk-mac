@@ -175,6 +175,35 @@ element type, so we can't read fp16 logits.
   sentence instead of an em-dash. Use straight quotes `'` and `"` only.
   Applies to everything you author, not just code.
 
+## Sparkle auto-update
+
+Updates ship via **Sparkle 2** (SPM). The appcast lives in the
+`RedactDesk/redactdesk-mac` GitHub repo at `appcast.xml`; Sparkle reads it
+straight from `raw.githubusercontent.com/.../main/appcast.xml`. No separate
+web host - release binaries are GitHub release assets.
+
+- `PII Redactor/Updater.swift` wraps `SPUStandardUpdaterController` as a
+  SwiftUI `ObservableObject`. The App owns one `@StateObject` instance that
+  also feeds Settings.
+- Entitlements add a `mach-lookup.global-name` temporary exception for
+  `$(PRODUCT_BUNDLE_IDENTIFIER)-spks` and `-spki` so Sparkle's Installer XPC
+  service works inside the sandbox.
+- `SUEnableInstallerLauncherService = YES` is set in the Info.plist stub,
+  same reason. Custom plist keys can't be driven from `INFOPLIST_KEY_*`
+  build settings, which is why the app uses a hybrid approach: Xcode still
+  auto-generates most keys (GENERATE_INFOPLIST_FILE = YES), merged with
+  `PII Redactor/Info.plist` which carries just the three Sparkle keys.
+- `SUPublicEDKey` is empty in git by design. Paste the **existing Elephas
+  EdDSA public key** (same keypair; one private key in the release keychain
+  signs both products' updates) into `PII Redactor/Info.plist`. The helper
+  script `Scripts/sparkle-generate-keys.sh` is only needed if the key ever
+  gets rotated.
+- `Scripts/sparkle-release.sh <artifact> <shortVersion> <build>` signs a
+  notarized DMG and prints an `<item>` block whose enclosure URL points at
+  `github.com/RedactDesk/redactdesk-mac/releases/download/vX.Y.Z/<artifact>`.
+  Tag the GitHub release as `vX.Y.Z` and attach the DMG so that URL
+  resolves.
+
 ## What this repo is **not**
 
 - Not a general-purpose ML inference wrapper. It's tailored to

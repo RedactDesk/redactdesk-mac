@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  Sparkle-specific keys only. Everything else (CFBundleShortVersionString,
+	  CFBundleIdentifier, LSApplicationCategoryType, ...) is still auto-generated
+	  from build settings - GENERATE_INFOPLIST_FILE stays YES and Xcode merges
+	  this file with the generated one. Do not duplicate auto-generated keys
+	  here; they would shadow the values in pbxproj.
+	-->
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/RedactDesk/redactdesk-mac/main/appcast.xml</string>
+	<!--
+	  Reuses the EdDSA public key already minted for Elephas - the same
+	  private key in the release keychain signs both products' updates.
+	  Paste the base64 key here before shipping; an empty string tells
+	  Sparkle to refuse every update, which is the safe default.
+	-->
+	<key>SUPublicEDKey</key>
+	<string>sWB277xIOQj/jm/dSPUjiAWPq3uC/Jl4K6Cp1oC8Vd8=</string>
+	<!--
+	  Required for sandboxed apps: forces Sparkle to launch its Installer.xpc
+	  rather than spawning an out-of-sandbox helper directly. Paired with the
+	  mach-lookup temporary exceptions in PII Redactor.entitlements.
+	-->
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+</dict>
+</plist>
