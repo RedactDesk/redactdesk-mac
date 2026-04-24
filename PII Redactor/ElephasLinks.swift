@@ -64,5 +64,5 @@ enum ElephasLinks {
     }
 
     /// View-source link - the repo README lives here.
-    static let repoURL = URL(string: "https://github.com/Kamban-Selvakumar/safepaste")!
+    static let repoURL = URL(string: "https://github.com/kambanthemaker/safepaste")!
 }

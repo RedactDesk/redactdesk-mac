@@ -2,6 +2,8 @@
 
 > Redact PII from any PDF, 100% on your Mac. No cloud, no telemetry.
 
+Made by the [Elephas](https://elephas.app?ref=safepaste-github) team.
+
 SafePaste is a free, open-source macOS app that removes personally identifiable
 information from PDFs — names, emails, phone numbers, addresses, dates, URLs,
 account numbers, and secrets — using OpenAI's
@@ -37,8 +39,8 @@ macOS 14 Sonoma or later, Intel and Apple Silicon.
 ### Steps
 
 ```bash
-git clone https://github.com/<your-user>/SafePaste.git
-cd SafePaste
+git clone https://github.com/kambanthemaker/safepaste.git
+cd safepaste
 open "PII Redactor.xcodeproj"
 # Cmd-R to build and run.
 ```
@@ -68,6 +70,23 @@ Eleven Swift files grouped by layer:
 
 See [`CLAUDE.md`](CLAUDE.md) for architectural decisions and gotchas.
 
+## About Elephas
+
+SafePaste is built and maintained by the team behind
+[**Elephas**](https://elephas.app?ref=safepaste-github-about) - a Mac
+app for working with sensitive documents in AI. Elephas does
+folder-wide redaction, summarization, and sensitive-document search,
+with a fully local processing mode for teams that cannot send data to
+the cloud.
+
+SafePaste is a small, open-source slice of that world, focused on one
+job: redacting PII from a single PDF, free forever. If you want the
+full workflow - across folders, with chat, search, and summarization -
+take a look at Elephas.
+
+- Website: <https://elephas.app?ref=safepaste-github-about>
+- SafePaste is MIT-licensed; Elephas is a separate commercial product.
+
 ## Acknowledgments
 
 - **Model**: [openai/privacy-filter](https://huggingface.co/openai/privacy-filter) (Apache-2.0)
@@ -77,4 +96,6 @@ See [`CLAUDE.md`](CLAUDE.md) for architectural decisions and gotchas.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+Code is MIT - see [LICENSE](LICENSE). The "SafePaste" name and icon
+are a trademark of Elephas and are not covered by the MIT grant - see
+[TRADEMARK.md](TRADEMARK.md) before forking.
