@@ -6,6 +6,7 @@ import SwiftUI
 struct EntitySidebar: View {
     @EnvironmentObject private var controller: DocumentController
     @Binding var focusedSpan: PageSpan?
+    @State private var collapsedCategories: Set<Design.Category> = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -77,18 +78,33 @@ struct EntitySidebar: View {
                     ForEach(Design.Category.displayOrder, id: \.self) { category in
                         let inCategory = all.filter { $0.category == category }
                         if !inCategory.isEmpty {
+                            let isCollapsed = collapsedCategories.contains(category)
                             Section {
-                                ForEach(inCategory) { span in
-                                    EntityRow(
-                                        span: span,
-                                        isFocused: focusedSpan?.id == span.id,
-                                        isEnabled: controller.enabledCategories.contains(category)
-                                    ) {
-                                        focusedSpan = span
+                                if !isCollapsed {
+                                    ForEach(inCategory) { span in
+                                        EntityRow(
+                                            span: span,
+                                            isFocused: focusedSpan?.id == span.id,
+                                            isEnabled: controller.enabledCategories.contains(category)
+                                        ) {
+                                            focusedSpan = span
+                                        }
                                     }
                                 }
                             } header: {
-                                SectionHeader(category: category, count: inCategory.count)
+                                SectionHeader(
+                                    category: category,
+                                    count: inCategory.count,
+                                    isCollapsed: isCollapsed
+                                ) {
+                                    withAnimation(.easeInOut(duration: 0.18)) {
+                                        if isCollapsed {
+                                            collapsedCategories.remove(category)
+                                        } else {
+                                            collapsedCategories.insert(category)
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -185,24 +201,35 @@ private struct CategoryChip: View {
 private struct SectionHeader: View {
     let category: Design.Category
     let count: Int
+    let isCollapsed: Bool
+    let toggle: () -> Void
 
     var body: some View {
-        HStack(spacing: Design.Space.xs) {
-            Image(systemName: category.icon)
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(category.color)
-            Text(category.title.uppercased())
-                .font(Design.Font.captionStrong)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Text("\(count)")
-                .font(Design.Font.monoSmall)
-                .foregroundStyle(.secondary.opacity(0.7))
+        Button(action: toggle) {
+            HStack(spacing: Design.Space.xs) {
+                Image(systemName: category.icon)
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(category.color)
+                Text(category.title.uppercased())
+                    .font(Design.Font.captionStrong)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(count)")
+                    .font(Design.Font.monoSmall)
+                    .foregroundStyle(.secondary.opacity(0.7))
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.secondary.opacity(0.7))
+                    .rotationEffect(.degrees(isCollapsed ? -90 : 0))
+            }
+            .padding(.horizontal, Design.Space.lg)
+            .padding(.top, Design.Space.md)
+            .padding(.bottom, Design.Space.xxs)
+            .background(Design.sidebarSurface)
+            .contentShape(Rectangle())
         }
-        .padding(.horizontal, Design.Space.lg)
-        .padding(.top, Design.Space.md)
-        .padding(.bottom, Design.Space.xxs)
-        .background(Design.sidebarSurface)
+        .buttonStyle(.plain)
+        .help(isCollapsed ? "Expand \(category.title.lowercased())" : "Collapse \(category.title.lowercased())")
     }
 }
 
