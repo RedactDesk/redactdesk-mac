@@ -110,19 +110,19 @@ echo "    artifacts   : ${VERSION_DIR}"
 
 if [[ ! -f "$DMG_PATH" ]]; then
     echo "==> Building DMG"
-    # create-dmg refuses to overwrite; run in a scratch dir to be safe.
-    TMP_STAGE="$(mktemp -d)"
-    trap 'rm -rf "$TMP_STAGE"' EXIT
-    cp -R "$APP_PATH" "$TMP_STAGE/"
-    create-dmg \
-        --volname "RedactDesk ${VERSION}" \
-        --window-size 520 340 \
-        --icon-size 110 \
-        --icon "RedactDesk.app" 130 150 \
-        --app-drop-link 390 150 \
-        --hide-extension "RedactDesk.app" \
-        "$DMG_PATH" \
-        "$TMP_STAGE"
+    # Uses the sindresorhus/create-dmg npm tool, which auto-names the output
+    # as "<AppName> <ShortVersion>.dmg" in the destination dir and cannot be
+    # told a specific filename. Rename to the canonical RedactDesk.dmg after.
+    (
+        cd "$VERSION_DIR"
+        create-dmg --overwrite "$APP_PATH" "$VERSION_DIR"
+    )
+    GENERATED_DMG=$(ls -t "$VERSION_DIR"/RedactDesk*.dmg 2>/dev/null | grep -v "^${DMG_PATH}\$" | head -1)
+    if [[ -z "$GENERATED_DMG" || ! -f "$GENERATED_DMG" ]]; then
+        echo "create-dmg did not produce a DMG in $VERSION_DIR" >&2
+        exit 1
+    fi
+    mv "$GENERATED_DMG" "$DMG_PATH"
     echo "    built: $DMG_PATH"
 else
     echo "==> Reusing existing DMG at $DMG_PATH"
