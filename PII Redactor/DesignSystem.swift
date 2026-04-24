@@ -188,9 +188,14 @@ enum Design {
     }
 
     // MARK: - Surfaces
+    //
+    // `underPageBackgroundColor` is the medium-gray macOS uses behind document
+    // pages in Preview. It reads as dim next to a bright canvas, so the
+    // sidebar and split-view backdrops use the palette's slate-50 instead.
 
     static let surface = Color(NSColor.controlBackgroundColor)
-    static let sidebarSurface = Color(NSColor.underPageBackgroundColor)
+    static let sidebarSurface = Palette.bgSoft        // #F9FAFB
+    static let workspaceSurface = Palette.bgSection   // #F8FAFC
     static let separator = Color(NSColor.separatorColor)
     static let dropHighlight = Color.accentColor.opacity(0.15)
 }

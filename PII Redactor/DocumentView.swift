@@ -14,7 +14,7 @@ struct DocumentView: View {
             rightPane
                 .frame(minWidth: 480)
         }
-        .background(Color(NSColor.underPageBackgroundColor))
+        .background(Design.workspaceSurface)
     }
 
     @ViewBuilder
