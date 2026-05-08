@@ -4,16 +4,24 @@
 
 Made by the [Elephas](https://elephas.app?ref=redactdesk-github) team.
 
+![RedactDesk detecting PII in a sample PDF](docs/hero.png)
+
+### [Download RedactDesk for Mac (.dmg)](https://github.com/RedactDesk/redactdesk-mac/releases/latest/download/RedactDesk.dmg)
+
+Signed and notarized. macOS 14 Sonoma or later, Intel and Apple Silicon.
+See [all releases](https://github.com/RedactDesk/redactdesk-mac/releases/latest)
+for the .zip build and release notes, or build from source below.
+
 RedactDesk is a free, open-source macOS app that removes personally identifiable
-information from PDFs — names, emails, phone numbers, addresses, dates, URLs,
-account numbers, and secrets — using OpenAI's
+information from PDFs - names, emails, phone numbers, addresses, dates, URLs,
+account numbers, and secrets - using OpenAI's
 [privacy-filter](https://huggingface.co/openai/privacy-filter) model running
 entirely on-device via ONNX Runtime.
 
 - **On-device**: the model runs on your Mac's CPU, GPU, and Neural Engine. No
   network traffic after the one-time model download.
 - **Image-rewrite redaction**: exported PDFs have the redacted content
-  physically removed from the page — not just hidden behind a visual overlay.
+  physically removed from the page - not just hidden behind a visual overlay.
   Copy-paste, accessibility APIs, and text extraction tools find nothing.
 - **Eight PII categories**: people, emails, phone numbers, addresses, dates,
   URLs, account numbers, secrets. Each can be toggled on or off before export.
@@ -21,12 +29,8 @@ entirely on-device via ONNX Runtime.
 
 ## Status
 
-v0.1 — text-based PDFs only (OCR for scanned documents is planned for 0.3).
+v0.1 - text-based PDFs only (OCR for scanned documents is planned for 0.3).
 macOS 14 Sonoma or later, Intel and Apple Silicon.
-
-## Screenshots
-
-*(to be added)*
 
 ## Building from source
 
