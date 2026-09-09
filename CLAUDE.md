@@ -23,9 +23,9 @@ Connect pricing) - it's explicitly off the roadmap.
 
 The underlying ML pipeline is `openai/privacy-filter` (a token-classification
 model) running via ONNX Runtime with the CoreML execution provider. Exported
-PDFs use **image-rewrite redaction**: each page is rasterized, black boxes are
-painted over PII rectangles, and the result is a new PDF with no recoverable
-text layer for the redacted regions.
+PDFs use **image-rewrite redaction**: each page is rasterized with black boxes
+burned into the bitmap over the PII rectangles, and that bitmap becomes the new
+page. The output has no text layer and no original pixels under the boxes.
 
 ## Build / run commands
 
@@ -87,6 +87,17 @@ gone, not just visually covered.
 Tradeoff: exported PDFs have no selectable text anywhere, not just in
 redacted regions. Users expecting Adobe-Acrobat-style "redact these spans but
 leave everything else selectable" will be surprised. Acceptable for v0.1.
+
+**The invariant that makes this true**: the black boxes must be filled into the
+bitmap *before* `makeImage()`, and the page must be drawn with
+`CGContext.drawPDFPage`, never `PDFPage.draw(with:to:)`. Painting the boxes
+into the PDF context after the image is drawn leaves the unredacted page as a
+recoverable image XObject with removable vector rects on top, so `pdfimages
+-all` hands back every redacted item. `PDFPage.draw` renders PDFKit
+annotations, and `PDFCanvasView` attaches its preview overlays - whose
+`contents` hold the detected text - to the same `PDFDocument` being exported.
+Both mistakes shipped in v0.1 through v1.02 and were reported externally; see
+the comment on `renderPageAsImage` before touching that function.
 
 ### 2. Span rectangles come from PDFKit native selection, not from a manual bounds array
 

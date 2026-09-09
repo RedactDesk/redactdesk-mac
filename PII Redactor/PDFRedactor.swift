@@ -3,10 +3,11 @@ import PDFKit
 import CoreGraphics
 import AppKit
 
-/// Image-rewrite PDF redactor. Each page is rendered to a bitmap, redaction
-/// rects are painted as solid black boxes, and the result is composed back
-/// into a fresh single-file PDF. The output has no selectable text layer.
-/// Redacted content is physically gone, not just hidden.
+/// Image-rewrite PDF redactor. Each page is rendered to a bitmap with solid
+/// black boxes burned over the redaction rects, and that bitmap is composed
+/// back into a fresh single-file PDF. The output has no selectable text layer
+/// and no recoverable pixels underneath the boxes. Redacted content is
+/// physically gone, not just hidden.
 enum PDFRedactor {
     enum ExportError: LocalizedError {
         case couldNotCreateContext
@@ -62,35 +63,46 @@ enum PDFRedactor {
                 context.closePDF()
                 throw ExportError.couldNotRenderPage(i)
             }
-            var box = page.bounds(for: .mediaBox)
-            let pageInfo: CFDictionary = [kCGPDFContextMediaBox as String: Data(bytes: &box, count: MemoryLayout<CGRect>.size)] as CFDictionary
+
+            // PDFKit reports the unrotated media box, so a /Rotate 90 or 270
+            // page displays with its dimensions swapped. The output page has to
+            // match the displayed size or the content renders off-canvas.
+            let box = page.bounds(for: .mediaBox)
+            let quarterTurned = abs(page.rotation / 90) % 2 == 1
+            var pageRect = CGRect(
+                origin: .zero,
+                size: quarterTurned
+                    ? CGSize(width: box.height, height: box.width)
+                    : box.size
+            )
+            let pageInfo: CFDictionary = [kCGPDFContextMediaBox as String: Data(bytes: &pageRect, count: MemoryLayout<CGRect>.size)] as CFDictionary
             context.beginPDFPage(pageInfo)
 
-            // 1. Draw the original page into the PDF page as a bitmap.
-            try renderPageAsImage(page: page, box: box, scale: options.scale, into: context)
+            // Draw the page as a bitmap with the black boxes already burned in.
+            // Nothing may be painted over the image afterwards - see the note on
+            // renderPageAsImage.
+            let redactions = spans.spans(on: i)
+                .filter { options.enabled.contains($0.category) }
+                .flatMap(\.rects)
 
-            // 2. Paint black redaction rectangles on top, in page coordinates.
-            let pageSpans = spans.spans(on: i).filter { options.enabled.contains($0.category) }
-            if !pageSpans.isEmpty {
-                NSGraphicsContext.saveGraphicsState()
-                NSGraphicsContext.current = nsCtx
-                context.setFillColor(NSColor.black.cgColor)
-                for span in pageSpans {
-                    for rect in span.rects {
-                        let padded = rect.insetBy(dx: -options.rectPadding, dy: -options.rectPadding)
-                        context.fill(padded)
-                    }
-                }
-                NSGraphicsContext.restoreGraphicsState()
-            }
+            try renderPageAsImage(
+                page: page,
+                index: i,
+                pageRect: pageRect,
+                redactions: redactions,
+                padding: options.rectPadding,
+                scale: options.scale,
+                into: context
+            )
 
-            // 3. Watermark footer line - printed in the bottom margin of every
-            //    page. Drawn via AppKit string drawing, not Core Text, so we
-            //    get automatic font substitution for the middle-dot.
+            // Watermark footer line - printed in the bottom margin of every
+            // page. Drawn via AppKit string drawing, not Core Text, so we get
+            // automatic font substitution for the middle-dot. Safe to draw over
+            // the image: it adds content rather than concealing any.
             if let watermark = options.watermark, !watermark.isEmpty {
                 NSGraphicsContext.saveGraphicsState()
                 NSGraphicsContext.current = nsCtx
-                drawWatermark(watermark, in: box, context: context)
+                drawWatermark(watermark, in: pageRect, context: context)
                 NSGraphicsContext.restoreGraphicsState()
             }
 
@@ -104,18 +116,41 @@ enum PDFRedactor {
         }
     }
 
-    /// Render a PDFPage into the current PDF context as a raster image.
-    /// This is the "image rewrite" step - any text layer in the source PDF is
-    /// intentionally not preserved so redacted content cannot be recovered via
-    /// copy/paste, accessibility APIs, or PDF text extraction tools.
+    /// Render a PDFPage into the current PDF context as a raster image, with
+    /// the redaction boxes burned into the bitmap.
+    ///
+    /// This is the "image rewrite" step, and two details of it carry the
+    /// product's entire security claim. Both are easy to undo by accident:
+    ///
+    /// 1. The boxes are filled into the *bitmap*, before `makeImage()`. Filling
+    ///    them into the PDF context after the image is drawn would leave the
+    ///    original page intact as an image XObject with removable vector
+    ///    rectangles layered on top, and `pdfimages -all` would hand back every
+    ///    redacted item. Never paint concealing marks into the PDF context.
+    /// 2. The page is drawn with `CGContext.drawPDFPage`, not
+    ///    `PDFPage.draw(with:to:)`. The latter renders PDFKit annotations, and
+    ///    `PDFCanvasView` hangs its live preview overlays - which carry the
+    ///    detected text in `contents` - on the very `PDFDocument` being
+    ///    exported. Those would be baked into the image.
+    ///
+    /// Drawing the page content and the boxes under one `getDrawingTransform`
+    /// keeps them in a single coordinate space, so /Rotate is honoured by both
+    /// and the boxes land on the pixels the model actually matched.
     private static func renderPageAsImage(
         page: PDFPage,
-        box: CGRect,
+        index: Int,
+        pageRect: CGRect,
+        redactions: [CGRect],
+        padding: CGFloat,
         scale: CGFloat,
         into pdfContext: CGContext
     ) throws {
-        let pixelWidth = Int((box.width * scale).rounded(.up))
-        let pixelHeight = Int((box.height * scale).rounded(.up))
+        guard let pageRef = page.pageRef else {
+            throw ExportError.couldNotRenderPage(index)
+        }
+
+        let pixelWidth = Int((pageRect.width * scale).rounded(.up))
+        let pixelHeight = Int((pageRect.height * scale).rounded(.up))
         let colorSpace = CGColorSpaceCreateDeviceRGB()
 
         guard let bitmap = CGContext(
@@ -127,18 +162,34 @@ enum PDFRedactor {
             space: colorSpace,
             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
         ) else {
-            throw ExportError.couldNotRenderPage(page.pageRef?.pageNumber ?? 0)
+            throw ExportError.couldNotRenderPage(index)
         }
 
         bitmap.setFillColor(NSColor.white.cgColor)
         bitmap.fill(CGRect(x: 0, y: 0, width: CGFloat(pixelWidth), height: CGFloat(pixelHeight)))
         bitmap.scaleBy(x: scale, y: scale)
-        page.draw(with: .mediaBox, to: bitmap)
+
+        // Maps the media box onto the page rect, applying the page's /Rotate.
+        let transform = pageRef.getDrawingTransform(
+            .mediaBox,
+            rect: CGRect(origin: .zero, size: pageRect.size),
+            rotate: 0,
+            preserveAspectRatio: true
+        )
+        bitmap.concatenate(transform)
+        bitmap.drawPDFPage(pageRef)
+
+        // Span rects are in the same unrotated media box space the transform
+        // maps from, so they are filled without leaving it.
+        bitmap.setFillColor(NSColor.black.cgColor)
+        for rect in redactions {
+            bitmap.fill(rect.insetBy(dx: -padding, dy: -padding))
+        }
 
         guard let image = bitmap.makeImage() else {
-            throw ExportError.couldNotRenderPage(page.pageRef?.pageNumber ?? 0)
+            throw ExportError.couldNotRenderPage(index)
         }
-        pdfContext.draw(image, in: box)
+        pdfContext.draw(image, in: pageRect)
     }
 
     /// Draws the attribution footer centred horizontally near the bottom of
